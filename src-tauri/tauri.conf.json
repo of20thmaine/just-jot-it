@@ -16,6 +16,12 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "window": {
+        "all": true
+      },
+      "process": {
+        "exit": true
       }
     },
     "bundle": {
@@ -62,8 +68,8 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "just_jot_it",
-        "width": 800
+        "width": 800,
+        "decorations": false
       }
     ]
   }
