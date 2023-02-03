@@ -20,7 +20,7 @@
                     noteIsCreated = true;
                 });
             }
-            noteBeingSaved = false;
+            setTimeout(() => {noteBeingSaved = false}, 700); // Needed due to uncanny valley and save times.
         } else {
             if (noteIsCreated) {
                 DeleteNote(id);
@@ -28,8 +28,6 @@
                 id = -1;
             }
         }
-
-        GetAllNotes().then((value) => {console.log(value.length)});
     }
 
     onMount(async () => {
