@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import { CreateNote, UpdateNote, DeleteNote } from "./db";
+    import { CreateNote, UpdateNote, DeleteNote, GetAllNotes } from "./db";
 
     export let note: string = "";
     export let id: number = -1;
@@ -17,11 +17,10 @@
             } else {
                 CreateNote(note).then((value) => {
                     id = value.lastInsertId;
+                    noteIsCreated = true;
                 });
             }
-            console.log(1);
             noteBeingSaved = false;
-            noteIsCreated = true;
         } else {
             if (noteIsCreated) {
                 DeleteNote(id);
@@ -29,6 +28,8 @@
                 id = -1;
             }
         }
+
+        GetAllNotes().then((value) => {console.log(value.length)});
     }
 
     onMount(async () => {
@@ -43,13 +44,15 @@
         bind:this={noteInput}
         bind:innerHTML={note}>
     </div>
-    {#if !noteIsCreated && !noteBeingSaved}
-        <div class="status">To create a note, start typing.</div>
-    {:else if noteBeingSaved}
-        <div class="status">Saving...</div>
-    {:else}
-        <div class="status">Saved</div>
-    {/if}
+    <div class="statusArea">
+        {#if !noteIsCreated && !noteBeingSaved}
+            <div class="status">To create a note, start typing.</div>
+        {:else if noteBeingSaved}
+            <div class="status">Saving...</div>
+        {:else}
+            <div class="status saved">Saved</div>
+        {/if}
+    </div>
 </div>
 
 <style>
@@ -72,20 +75,13 @@
         outline: 1px solid var(--highlightColor);
     }
 
-    .createBtn {
-        background-color: #238636;
-        color: white;
-        width: 180px;
-        text-align: center;
-        font-weight: 600;
-        padding: 0.4rem;
-        margin-top: 2.0rem;
-        border: 1px solid var(--borderColor);
-        border-radius: 4px;
+    .statusArea {
+        margin-top: 1.0rem;
+        color: var(--fontColor);
+        font-size: 0.9rem;
     }
 
-    .createBtn:hover {
-        background-color: #2ea043;
-        cursor: pointer;
+    .saved {
+        color:#3cb452;
     }
 </style>
