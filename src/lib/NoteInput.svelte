@@ -55,12 +55,11 @@
 
 <style>
     .inputArea {
-        padding: 2.0rem;
+        padding: 0.5rem;
     }
 
     .noteInput {
-        border: 1px solid var(--borderColor);
-        border-radius: 4px;
+        border-radius: 8px;
         background-color: var(--textfieldColor);
         padding: 0.5rem;
         color: var(--fontColor);
@@ -69,9 +68,9 @@
         font-size: 1.15rem;
     }
 
-    .noteInput:focus {
+    /* .noteInput:focus {
         outline: 1px solid var(--highlightColor);
-    }
+    } */
 
     .statusArea {
         margin-top: 1.0rem;

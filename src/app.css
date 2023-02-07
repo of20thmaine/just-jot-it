@@ -1,3 +1,9 @@
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+
 :root {
 	font-family: Open-Sans, Helvetica, Arial, sans-serif;
 	font-synthesis: none;
@@ -11,11 +17,11 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--backgroundColor: #252526;
+		--backgroundColor: #121212;
 		--textfieldColor: #1e1e1e;
 		--fontColor: #f9f9f9;
 		--borderColor: #c1c1c1;
-		--titlebarColor: #3c3c3c;
+		--titlebarColor: #2e2e2e;
 		--hoverBtnColor: #565656;
 	}
 }
@@ -35,4 +41,5 @@ body {
 	background-color: var(--backgroundColor);
 	margin: 0;
 	padding: 0;
+	overflow: hidden;
 }
