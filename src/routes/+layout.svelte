@@ -1,5 +1,10 @@
 <script>
   import "../app.css";
+  import "bootstrap-icons/font/bootstrap-icons.css";
+  import TitleBar from "$lib/TitleBar.svelte";
 </script>
 
-<slot />
+<TitleBar />
+<div>
+  <slot />
+</div>

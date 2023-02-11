@@ -15,10 +15,10 @@
             if (noteIsCreated) {
                 UpdateNote(id, note);
             } else {
-                CreateNote(note).then((value) => {
-                    id = value.lastInsertId;
-                    noteIsCreated = true;
-                });
+                // CreateNote(note).then((value) => {
+                //     id = value.lastInsertId;
+                //     noteIsCreated = true;
+                // });
             }
             setTimeout(() => {noteBeingSaved = false}, 700); // Needed due to uncanny valley and save times.
         } else {

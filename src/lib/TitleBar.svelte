@@ -34,14 +34,13 @@
         {#if showFileMenu}
             <div class="blinder"
                     on:click={() => {showFileMenu = !showFileMenu}}
-                    on:keypress={() => {showFileMenu = !showFileMenu}}>
-                <div class="dropdown">
-                    <div class="dropdownItm">New note</div>
-                    <div class="dropdownItm"
-                            on:click={async () => {await exit(1)}}
-                            on:keypress={async () => {await exit(1);}}>
-                        Exit</div>
-                </div>
+                    on:keypress={() => {showFileMenu = !showFileMenu}}></div>
+            <div class="dropdown">
+                <div class="dropdownItm">New note</div>
+                <div class="dropdownItm"
+                        on:click={async () => {await exit(1)}}
+                        on:keypress={async () => {await exit(1);}}>
+                    Exit</div>
             </div>
         {/if}
     <div class="titlebar-button" id="titlebar-minimize"
@@ -72,7 +71,7 @@
 
 <style>
     .titlebar {
-        height: 30px;
+        height: var(--titlebarHeight);
         background-color: var(--titlebarColor);
         user-select: none;
         display: flex;
@@ -126,30 +125,20 @@
         height: 60%;
     }
 
-    .blinder {
-        position: fixed;
-        z-index: 2;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-    }
-
     .dropdown {
-        position: relative;
+        position: fixed;
+        z-index: 3;
         top: 30px;
         left: 2.5rem;
         background-color: var(--backgroundColor);
         border: 1px solid var(--borderColor);
-        border-radius: 4px;
-        width: 180px;
-        padding: 0.15rem;
+        font-size: 0.9rem;
+        padding: 0.3rem;
     }
 
     .dropdownItm {
         color: var(--fontColor);
-        padding: 0.4rem 1.0rem;
-        border-radius: 4px;
+        padding: 0.3rem;
     }
 
     .dropdownItm:hover {

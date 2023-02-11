@@ -1,13 +1,13 @@
 interface Note {
     id: number;
     content: string;
-    created_at: Date;
-    updated_at: Date;
+    created_at: string;
+    updated_at: string;
 }
 
 interface Collection {
     id: number;
     notes: Note[];
-    created_at: Date;
-    updated_at: Date;
+    created_at: string;
+    updated_at: string;
 }

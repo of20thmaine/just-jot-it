@@ -20,11 +20,9 @@ CREATE TABLE "notes" (
 
 -- Create Table Collections
 CREATE TABLE "collections" (
-    "id"        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name"      TEXT,
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
 
--- Insert App Defaults
-INSERT INTO "collections" ("id", "name") VALUES (1, "*");
