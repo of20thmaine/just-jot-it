@@ -11,3 +11,10 @@ interface Collection {
     created_at: string;
     updated_at: string;
 }
+
+interface CollectionView {
+    collectionId: string;
+    editModeId: number;
+    viewModeId: number;
+    notes: Note[];
+}
