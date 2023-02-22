@@ -21,7 +21,7 @@ CREATE TABLE "notes" (
 -- Create Table Collections
 CREATE TABLE "collections" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT,
+    "name" TEXT UNIQUE,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 )

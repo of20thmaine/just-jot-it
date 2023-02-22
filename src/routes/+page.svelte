@@ -1,10 +1,12 @@
 <script lang="ts">
+    import { WindowTitle } from "$lib/stores";
 
+    WindowTitle.set("Home");
 </script>
 
 <div class="page">
     <div class="btnLbl">Last Open:</div>
-    <a href="1/0/0">
+    <a href="1/*/0/0">
         <div class="lastOpen">
             <div class="collection">[Default]</div>
         </div>    

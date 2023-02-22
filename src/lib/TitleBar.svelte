@@ -2,13 +2,20 @@
     import { appWindow } from '@tauri-apps/api/window';
     import { exit } from '@tauri-apps/api/process';
     import { onMount } from 'svelte';
+    import { WindowTitle } from '$lib/stores';
+    import CreateCollection from '$lib/CreateCollection.svelte';
 
     let isDarkMode: boolean;
     let darkPath = "dark_";
     let lightPath = "light_";
     let currentPath = "";
+    
+    let windowTitle: string = "";
+    WindowTitle.subscribe(value => {windowTitle = value});
 
     let showFileMenu = false;
+
+    let showCreateCollection = false;
 
     $: isDarkMode ? currentPath = darkPath : currentPath = lightPath;
 
@@ -29,20 +36,31 @@
         />
     </div>
     <div class="menuSelection"
-            on:click={() => {showFileMenu = !showFileMenu}}
-            on:keypress={() => {showFileMenu = !showFileMenu}}>File</div>
+            on:click={() => showFileMenu = !showFileMenu}
+            on:keypress={() => showFileMenu = !showFileMenu}>File</div>
         {#if showFileMenu}
             <div class="blinder"
-                    on:click={() => {showFileMenu = !showFileMenu}}
-                    on:keypress={() => {showFileMenu = !showFileMenu}}></div>
+                    on:click={() => showFileMenu = !showFileMenu}
+                    on:keypress={() => showFileMenu = !showFileMenu}></div>
             <div class="dropdown">
                 <div class="dropdownItm">New note</div>
+                <div class="dropdownItm"
+                        on:click={() => {
+                                showFileMenu = !showFileMenu;
+                                showCreateCollection = !showCreateCollection;
+                            }}
+                        on:keypress={() => {
+                                showFileMenu = !showFileMenu;
+                                showCreateCollection = !showCreateCollection;
+                            }}>
+                    New Collection...</div>
                 <div class="dropdownItm"
                         on:click={async () => {await exit(1)}}
                         on:keypress={async () => {await exit(1);}}>
                     Exit</div>
             </div>
         {/if}
+    <div class="title">{windowTitle}</div>
     <div class="titlebar-button" id="titlebar-minimize"
             on:click={() => {appWindow.minimize()}}
             on:keypress={() => {appWindow.minimize()}}>
@@ -69,47 +87,42 @@
     </div>
 </div>
 
+{#if showCreateCollection}
+    <!-- <div class="blinder"
+        on:click={() => {showCreateCollection = !showCreateCollection}}
+        on:keypress={() => {showCreateCollection = !showCreateCollection}}></div> -->
+    <CreateCollection bind:showCreateCollection={showCreateCollection} />
+{/if}
+
 <style>
     .titlebar {
-        height: var(--titlebarHeight);
-        background-color: var(--titlebarColor);
-        user-select: none;
-        display: flex;
-        justify-content: flex-end;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-    }
-
-    .titlebar-button {
-        display: inline-flex;
-        justify-content: center;
+        height: var(--titlebarHeight);
+        background-color: var(--titlebarColor);
+        user-select: none;
+        display: flex;
         align-items: center;
-        width: 30px;
-        height: 30px;
-    }
-
-    .titlebar-button:hover {
-        background: var(--hoverBtnColor);
-    }
-
-    #titlebar-close:hover {
-        background: red;
+        justify-content: center;
     }
 
     .menuSelection {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        margin-right: auto;
         font-size: 0.9rem;
         color: var(--fontColor);
-        padding: 0 0.5rem;
+        padding: 0.4rem;
     }
 
     .menuSelection:hover {
         background-color: var(--hoverBtnColor);
+    }
+
+    .title {
+        margin: 0 auto;
+        color: var(--fontColor);
+        font-size: 0.9rem;
+        font-style: italic;
     }
 
     .icon {
@@ -127,7 +140,7 @@
 
     .dropdown {
         position: fixed;
-        z-index: 3;
+        z-index: 4;
         top: 30px;
         left: 2.5rem;
         background-color: var(--backgroundColor);
@@ -143,5 +156,21 @@
 
     .dropdownItm:hover {
         background-color: var(--highlightColor);
+    }
+
+    .titlebar-button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+    }
+
+    .titlebar-button:hover {
+        background: var(--hoverBtnColor);
+    }
+
+    #titlebar-close:hover {
+        background: red;
     }
 </style>

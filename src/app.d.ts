@@ -13,7 +13,8 @@ interface Collection {
 }
 
 interface CollectionView {
-    collectionId: string;
+    collectionId: number;
+    collectionName: string;
     editModeId: number;
     viewModeId: number;
     notes: Note[];

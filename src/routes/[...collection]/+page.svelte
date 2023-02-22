@@ -1,28 +1,39 @@
 <script lang="ts">
-    import { onMount, tick } from "svelte";
-    import { CreateNote, GetAllNotes, GetCollection, SortTypes, EditModes, ViewModes } from "$lib/db";
+    import { onMount } from "svelte";
+    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/db";
+    import { WindowTitle } from "$lib/stores";
+    import Note from "$lib/Note.svelte";
+
     export let data: CollectionView;
 
-    let collectionId: number = 1;
+    let collectionId: number = data.collectionId;
+    let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
+
+    let forceFocusId: number = -1;
 
     let editMode = EditModes[data.editModeId];
     let showEditModeSelect = false;
 
     let viewMode = ViewModes[data.viewModeId];
     let showViewModeSelect = false;
+
+    WindowTitle.set(data.collectionName);
     
     onMount(() => {
-        tick();
-        document.getElementById("n" + (data.notes.length-1).toString())?.focus();
+        jumpToPageEnd();
         if (editMode.id === 0) {
-            noteInput.focus();
+            setTimeout(() => {makeFocusNode(noteInput);}, 0);
         }
     });
 
     function changeEditMode(modeSelection: number) {
         editMode = EditModes[modeSelection];
         showEditModeSelect = false;
+    }
+
+    function jumpToPageEnd() {
+        collectionElement.scrollTop = collectionElement.scrollHeight;
     }
 
     function changeViewMode(modeSelection: number) {
@@ -53,8 +64,53 @@
         showViewModeSelect = !showViewModeSelect;
     }
 
-    function updateCollection() {
-        GetAllNotes().then((value) => {data.notes = value});
+    async function updateCollection() {
+        data.notes = await GetCollection(data.collectionId, viewMode.type);
+    }
+
+    /**
+     * Direction: -1 down, 1 up, 0/else neutral.
+    */
+    function forceFocusChange(currentFocusIdx: number, direction: number) {
+        if (direction === 1) {
+            if (data.notes[currentFocusIdx+1]) {
+                forceFocusId = data.notes[currentFocusIdx+1].id;
+                return;
+            }
+        } else if (direction === -1) {
+            if (data.notes[currentFocusIdx-1]) {
+                forceFocusId = data.notes[currentFocusIdx-1].id;
+                return;
+            }
+        } else {
+            if (data.notes[currentFocusIdx+1]) {
+                forceFocusId = data.notes[currentFocusIdx+1].id;
+                return;
+            } else if (data.notes[currentFocusIdx-1]) {
+                forceFocusId = data.notes[currentFocusIdx-1].id;
+                return;
+            }
+        }
+        forceFocusId = -1;
+    }
+
+    async function deleteNoteHandler(noteId: number, noteIdx: number) {
+        DeleteNote(noteId)
+            .then(() => {updateCollection()
+            .then(() => {forceFocusChange(noteIdx-1, 0)})});
+    }
+
+    function makeFocusNode(node: HTMLElement) {
+        let range = document.createRange();
+        range.selectNodeContents(node);
+        range.collapse(false);
+
+        let sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+
+        node.focus();
+        range.detach();
     }
 
     // Ensure these key handlers are only accesible in editing mode
@@ -66,14 +122,12 @@
                 event.preventDefault();
                 if (target.innerHTML.length > 0) {
                     CreateNote(target.innerHTML, collectionId);
-                    updateCollection();
+                    updateCollection().then(() => {jumpToPageEnd();});
                     target.innerHTML = "";
                 }
                 break;
         }
     }
-
-
 
 </script>
 
@@ -160,25 +214,16 @@
         
     </div>
 
-    <div class="noteCollection">
+    <div class="noteCollection" bind:this={collectionElement}>
         {#if data.notes}
             {#each data.notes as note, i}
-                <!-- This way looks dumb a.f. but it plays so nicely with svelte's built-in
-                reactivity it actually prevents massive complexity later with only tradeoff
-                being looking stupid. (contenteditable cannot be dynamic w/ bind of innerHTML) -->
-                {#if editMode.id === 1}
-                    <div class="noteContent"
-                        contenteditable="true"
-                        bind:innerHTML={note.content}
-                        id="n{i}">
-                    </div>
-                {:else}
-                    <div class="noteContent"
-                        contenteditable="false"
-                        bind:innerHTML={note.content}
-                        id="n{i}">
-                    </div>
-                {/if}
+                <Note 
+                    bind:note={note} 
+                    idx={i} 
+                    editMode={editMode.id} 
+                    bind:forceFocusId={forceFocusId} 
+                    forceFocusChange={forceFocusChange}
+                    deleteNoteHandler={deleteNoteHandler} />
             {/each}
         {:else}
             <p>Loading Collection...</p>
@@ -191,7 +236,8 @@
                 <div class="noteInput"
                     contenteditable="true"
                     on:keydown={editingKeyHandler}
-                    bind:this={noteInput}>
+                    bind:this={noteInput}
+                    placeholder="Append new note">
                 </div>
             </div>
         </div>
@@ -380,6 +426,13 @@
         min-height: 5.52rem;
         font-size: 1.15rem;
     }
+
+    [contenteditable=true]:empty:before {
+        content:attr(placeholder);
+        color: grey;
+    }
+    
+
 
     .append {
         color: #3cb452;

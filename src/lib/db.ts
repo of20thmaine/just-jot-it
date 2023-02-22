@@ -9,6 +9,13 @@ export async function CreateNote(content: string, collection_id: number): Promis
     );
 }
 
+export async function CreateCollection(name: string): Promise<QueryResult> {
+    return await db.execute(
+        "INSERT INTO collections (name) VALUES ($1)",
+        [name]
+    );
+}
+
 export async function UpdateNote(id: number, content: string): Promise<QueryResult> {
     return await db.execute("UPDATE notes SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", [content, id]);
 }
@@ -25,6 +32,14 @@ export async function GetCollection(collection_id: number, sort: SortTypes): Pro
     return await db.select("SELECT * FROM notes WHERE collection_id = $1 ORDER BY $2",
         [collection_id, getOrderByStr(sort)]);
 }
+
+// export async function GetCollectionName(id: number): Promise<string> {
+//     return await db.select("SELECT name FROM collections WHERE id = $1", [id]);
+// }
+
+// export async function GetCollectionTwo(collection_id: number, sort: SortTypes): Promise<Collection> {
+
+// }
 
 // export async function addSomeData() {
 //     await db.execute("INSERT INTO collections (name) VALUES ('*')");
