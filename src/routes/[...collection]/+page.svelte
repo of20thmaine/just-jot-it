@@ -3,20 +3,17 @@
     import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/db";
     import { WindowTitle } from "$lib/stores";
     import Note from "$lib/Note.svelte";
+    import Toolbar from "$lib/Toolbar.svelte";
 
     export let data: CollectionView;
 
     let collectionId: number = data.collectionId;
     let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
-
     let forceFocusId: number = -1;
-
     let editMode = EditModes[data.editModeId];
-    let showEditModeSelect = false;
-
     let viewMode = ViewModes[data.viewModeId];
-    let showViewModeSelect = false;
+    let freeEditAppendOpen = false;
 
     WindowTitle.set(data.collectionName);
     
@@ -27,13 +24,12 @@
         }
     });
 
-    function changeEditMode(modeSelection: number) {
-        editMode = EditModes[modeSelection];
-        showEditModeSelect = false;
-    }
-
     function jumpToPageEnd() {
         collectionElement.scrollTop = collectionElement.scrollHeight;
+    }
+
+    function changeEditMode(modeSelection: number) {
+        editMode = EditModes[modeSelection];
     }
 
     function changeViewMode(modeSelection: number) {
@@ -53,15 +49,6 @@
         }
         data.notes = data.notes; // Svelte reactivity feature.
         viewMode = ViewModes[modeSelection];
-        showViewModeSelect = false;
-    }
-
-    function toggleShowEditMode() {
-        showEditModeSelect = !showEditModeSelect;
-    }
-
-    function toggleShowViewMode() {
-        showViewModeSelect = !showViewModeSelect;
     }
 
     async function updateCollection() {
@@ -132,88 +119,12 @@
 </script>
 
 <div class="page">
-
-    <div class="toolBar">
-
-        <div class="selector {editMode.class}"
-            on:click={() => {toggleShowEditMode()}}
-            on:keypress={() => {toggleShowEditMode()}}>
-                <div class="ico"><i class="{editMode.icoClass}"></i></div>
-                <div class="name">{editMode.name}</div>
-                <div class="tIco"><i class="bi bi-chevron-down"></i></div></div>
-        {#if showEditModeSelect}
-            <div class="blinder"
-                    on:click={() => {toggleShowEditMode()}}
-                    on:keypress={() => {toggleShowEditMode()}}></div>
-            <div class="selectorMenu">
-                {#each EditModes as mode}
-                    <div class="menuItm {mode.class}"
-                            on:click={() => {changeEditMode(mode.id)}}
-                            on:keypress={() => {changeEditMode(mode.id)}}>
-                        <div class="ico"><i class="{mode.icoClass}"></i></div>
-                        <div class="name">{mode.name}</div>
-                    </div>
-                {/each}
-            </div>
-            
-        {/if}
-
-        <div class="viewModeSelector"
-            on:click={() => {toggleShowViewMode()}}
-            on:keypress={() => {toggleShowViewMode()}}>
-                <div class="leftIco"><i class="{viewMode.leftIco}"></i></div>
-                <div class="viewModeName">{viewMode.name}</div>
-                <div class="rightIco"><i class="{viewMode.rightIco}"></i></div></div>
-        {#if showViewModeSelect}
-            <div class="blinder"
-                on:click={() => {toggleShowViewMode()}}
-                on:keypress={() => {toggleShowViewMode()}}></div>
-            <div class="viewModeSelectorMenu">
-                <div class="cat">
-                    <i class="bi bi-arrow-down-up"></i>
-                    <div class="catName">Date Added:</div>
-                </div>
-                    <div class="catItm"
-                            on:click={() => {changeViewMode(0)}}
-                            on:keypress={() => {changeViewMode(0)}}>
-                        <div class="catItmName">Old to New</div>
-                        <i class="bi bi-sort-numeric-down-alt"></i>
-                    </div>
-                    <div class="catItm"
-                            on:click={() => {changeViewMode(1)}}
-                            on:keypress={() => {changeViewMode(1)}}>
-                        <div class="catItmName">New to Old</div>
-                        <i class="bi bi-sort-numeric-down"></i>
-                    </div>
-                <div class="cat">
-                    <i class="bi bi-arrow-down-up"></i>
-                    <div class="catName">Date Modified:</div>
-                </div>
-                    <div class="catItm"
-                            on:click={() => {changeViewMode(2)}}
-                            on:keypress={() => {changeViewMode(2)}}>
-                        <div class="catItmName">Old to New</div>
-                        <i class="bi bi-sort-numeric-down-alt"></i>
-                    </div>
-                    <div class="catItm"
-                            on:click={() => {changeViewMode(3)}}
-                            on:keypress={() => {changeViewMode(3)}}>
-                        <div class="catItmName">New to Old</div>
-                        <i class="bi bi-sort-numeric-down"></i>
-                    </div>
-                <div class="cat">
-                    <i class="bi bi-list-ol"></i>
-                    <div class="catName">Positional:</div>
-                </div>
-                <div class="catItm">
-                    <div class="catItmName">Create New</div>
-                    <i class="bi bi-plus-lg"></i>
-                </div>
-            </div>
-        {/if}
-        
-    </div>
-
+    <Toolbar
+        editMode={editMode}
+        viewMode={viewMode}
+        changeEditMode={changeEditMode}
+        changeViewMode={changeViewMode}
+    />
     <div class="noteCollection" bind:this={collectionElement}>
         {#if data.notes}
             {#each data.notes as note, i}
@@ -225,6 +136,16 @@
                     forceFocusChange={forceFocusChange}
                     deleteNoteHandler={deleteNoteHandler} />
             {/each}
+            {#if editMode.id === 1 && !freeEditAppendOpen}
+                <div class="freeEditAppendBtn"
+                        on:click={() => freeEditAppendOpen = true}
+                        on:keypress={() => freeEditAppendOpen = true}>
+                    <i class="bi bi-plus-lg"></i>
+                    <div class="btnTxt">Append</div>
+                </div>
+            {:else if editMode.id === 1 && freeEditAppendOpen}
+                <div class="freeEditAppender"></div>
+            {/if}
         {:else}
             <p>Loading Collection...</p>
         {/if}
@@ -242,7 +163,6 @@
             </div>
         </div>
     {/if}
-
 </div>
 
 <style>
@@ -254,142 +174,6 @@
         grid-template-rows: min-content 1fr min-content;
     }
 
-    .toolBar {
-        padding: 0.3rem;
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid var(--hoverBtnColor);
-    }
-
-    .selector {
-        padding: 0 0.4rem;
-        border: 1px dashed;
-        display: flex;
-        align-items: center;
-        width: 130px;
-        height: 26px;
-        background-color: var(--textfieldColor);
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .selector:hover {
-        border: 1px solid;
-    }
-
-    .selectorMenu {
-        position: fixed;
-        z-index: 3;
-        top: 64px;
-        left: 0.3rem;
-        width: 130px;
-        background-color: var(--backgroundColor);
-        border: 1px solid var(--borderColor);
-        cursor: pointer;
-    }
-
-    .menuItm {
-        display: flex;
-        align-items: center;
-        padding: 0.2rem 0.4rem;
-        border: 1px solid transparent;
-    }
-
-    .menuItm:hover {
-        border: 1px solid currentColor;
-        background-color: var(--textfieldColor);
-    }
-
-    .name {
-        margin: 0 auto;
-        font-size: 0.8rem;
-    }
-
-    .ico {
-        font-size: 1.0rem;
-    }
-
-    .sIco {
-        font-size: 0.9rem;
-    }
-
-    .tIco {
-        font-size: 0.7rem;
-    }
-
-    .viewModeSelector {
-        margin-left: 0.4rem;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        background-color: var(--textfieldColor);
-        color: #4fb8fe;
-        font-size: 0.8rem;
-        min-width: 142px;
-        height: 26px;
-        padding: 0 0.4rem;
-        border: 1px dashed #4fb8fe;
-        user-select: none;
-    }
-
-    .viewModeSelector:hover {
-        border: 1px solid;
-    }
-
-    .viewModeSelectorMenu {
-        position: fixed;
-        z-index: 3;
-        top: 64px;
-        left: 140px;
-        background-color: var(--backgroundColor);
-        border: 1px solid var(--borderColor);
-        color: var(--fontColor);
-        padding: 0.4rem;
-        font-size: 0.8rem;
-        min-width: 142px;
-    }
-
-    .viewModeName {
-        margin: 0 auto;
-    }
-
-    .cat {
-        display: flex;
-        align-items: center;
-        padding: 0.4rem;
-        user-select: none;
-    }
-
-    .catName {
-        margin-left: 0.4rem;
-        font-weight: 600;
-    }
-    
-    .itm {
-        padding: 0.4rem;
-    }
-
-    .catItm {
-        display: flex;
-        align-items: center;
-        justify-content: right;
-        padding: 0.4rem;
-        cursor: pointer;
-    }
-
-    .catItm:hover {
-        background-color: var(--highlightColor);
-    }
-
-    .catItmName {
-        margin-right: 0.6rem;
-    }
-
-    .rightIco {
-        font-size: 1.0rem;
-    }
-
-
     .noteCollection {
         padding: 0.5rem 1.0rem;
         overflow-y: auto;
@@ -400,18 +184,6 @@
         padding: 0.5rem;
         border-top: 1px solid var(--hoverBtnColor);
     }
-
-    .noteContent {
-        border-radius: 8px;
-        background-color: var(--textfieldColor);
-        padding: 0.5rem 0.75rem;
-        margin: 0.75rem 0;
-        color: var(--fontColor);
-        line-height: 1.84rem;
-        font-size: 1.15rem;
-        /* width: fit-content; */
-    }
-
 
     .inputArea {
         padding: 0.5rem;
@@ -431,19 +203,22 @@
         content:attr(placeholder);
         color: grey;
     }
-    
 
-
-    .append {
+    .freeEditAppendBtn {
         color: #3cb452;
+        display: flex;
+        border: 1px solid;
+        width: fit-content;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        align-items: center;
+        background-color: var(--textfieldColor);
+        cursor: pointer;
+        font-size: 0.9rem;
     }
-
-    .editing {
-        color: #F5DF4D;
-    }
-
-    .readOnly {
-        color: #BE3455;
+    
+    .btnTxt {
+        margin-left: 0.5rem;
     }
 
     /* width */

@@ -22,8 +22,6 @@
             UpdateNote(note.id, note.content).then(() => {
                 setTimeout(() => {noteBeingSaved = false}, 500);
             });
-        } else {
-            // Put this in the key handlers
         }
     }
 
@@ -36,7 +34,14 @@
         sel?.addRange(range);
         node.focus();
         range.detach();
-    } 
+    }
+
+    function onBlurHandler() {
+        hasFocus = false;
+        if (note.content.length === 0) {
+            deleteNoteHandler(note.id, idx);
+        }
+    }
 
     function freeEditKeyHandler(event: KeyboardEvent): void {
         switch (event.key) {
@@ -67,12 +72,14 @@
         bind:innerHTML={note.content}
         on:keydown={freeEditKeyHandler}
         on:focus={() => {hasFocus = true; forceFocusId = -1;}}
-        on:blur={() => {hasFocus = false}}
-        >
+        on:blur={() => {onBlurHandler()}}
+        placeholder="Empty notes are not saved">
     </div>
     {#if hasFocus}
         {#if noteBeingSaved}
             <div class="noteIdc loader"></div>
+        {:else if note.content.length === 0}
+            <div class="noteIdc toBeDeleted"><i class="bi bi-x"></i></div>
         {:else}
             <div class="noteIdc saved"><i class="bi bi-check-lg"></i></div>
         {/if}
@@ -95,6 +102,11 @@
         font-size: 1.15rem;
     }
 
+    [contenteditable=true]:empty:before {
+        content:attr(placeholder);
+        color: grey;
+    }
+
     .noteIdc {
         position: relative;
         float: right;
@@ -105,6 +117,10 @@
 
     .saved {
         color: #3cb452;
+    }
+
+    .toBeDeleted {
+        color: #BE3455;
     }
 
     .loader {
