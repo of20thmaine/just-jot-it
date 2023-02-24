@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { WindowTitle } from "$lib/stores";
+    import { WindowTitle } from "$lib/scripts/stores";
 
     WindowTitle.set("Home");
 </script>

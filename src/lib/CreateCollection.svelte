@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { CreateCollection } from "$lib/db";
+    import { CreateCollection } from "$lib/scripts/db";
 
     export let showCreateCollection: boolean;
 

@@ -2,7 +2,7 @@
     import { appWindow } from '@tauri-apps/api/window';
     import { exit } from '@tauri-apps/api/process';
     import { onMount } from 'svelte';
-    import { WindowTitle } from '$lib/stores';
+    import { WindowTitle } from '$lib/scripts/stores';
     import CreateCollection from '$lib/CreateCollection.svelte';
 
     let isDarkMode: boolean;

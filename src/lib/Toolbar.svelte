@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { EditModes } from "$lib/db";
+    import { EditModes } from "$lib/scripts/db";
 
     export let editMode: any;
     export let viewMode: any;

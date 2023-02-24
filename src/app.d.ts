@@ -17,5 +17,4 @@ interface CollectionView {
     collectionName: string;
     editModeId: number;
     viewModeId: number;
-    notes: Note[];
 }

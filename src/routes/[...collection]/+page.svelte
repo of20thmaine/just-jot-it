@@ -1,26 +1,30 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/db";
-    import { WindowTitle } from "$lib/stores";
-    import Note from "$lib/Note.svelte";
+    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/scripts/db";
+    import { WindowTitle } from "$lib/scripts/stores";
+    import NoteView from "$lib/NoteView.svelte";
     import Toolbar from "$lib/Toolbar.svelte";
 
     export let data: CollectionView;
 
+    let notes: Note[];
     let collectionId: number = data.collectionId;
     let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
     let forceFocusId: number = -1;
     let editMode = EditModes[data.editModeId];
     let viewMode = ViewModes[data.viewModeId];
+
     let freeEditAppendOpen = false;
 
     WindowTitle.set(data.collectionName);
+
+    GetCollection(data.collectionId, viewMode.type).then((value) => {notes = value });
     
     onMount(() => {
         jumpToPageEnd();
         if (editMode.id === 0) {
-            setTimeout(() => {makeFocusNode(noteInput);}, 0);
+            setTimeout(() => {noteInput.focus()}, 0);
         }
     });
 
@@ -32,27 +36,32 @@
         editMode = EditModes[modeSelection];
     }
 
+    function freeEditAppend(idx: number) {
+        notes.splice(idx, 0, {id: -1, content: "", created_at: "", updated_at: ""});
+        notes = notes;
+    }
+
     function changeViewMode(modeSelection: number) {
         switch (modeSelection) {
-            case 0: data.notes.sort((a, b) => {
+            case 0: notes.sort((a, b) => {
                 return +new Date(a.created_at) - +new Date(b.created_at);
             }); break;
-            case 1: data.notes.sort((a, b) => {
+            case 1: notes.sort((a, b) => {
                 return +new Date(b.created_at) - +new Date(a.created_at);
             }); break;
-            case 2: data.notes.sort((a, b) => {
+            case 2: notes.sort((a, b) => {
                 return +new Date(a.updated_at) - +new Date(b.updated_at);
             }); break;
-            case 3: data.notes.sort((a, b) => {
+            case 3: notes.sort((a, b) => {
                 return +new Date(b.updated_at) - +new Date(a.updated_at);
             }); break;
         }
-        data.notes = data.notes; // Svelte reactivity feature.
+        notes = notes; // Svelte reactivity feature.
         viewMode = ViewModes[modeSelection];
     }
 
     async function updateCollection() {
-        data.notes = await GetCollection(data.collectionId, viewMode.type);
+        notes = await GetCollection(data.collectionId, viewMode.type);
     }
 
     /**
@@ -60,21 +69,21 @@
     */
     function forceFocusChange(currentFocusIdx: number, direction: number) {
         if (direction === 1) {
-            if (data.notes[currentFocusIdx+1]) {
-                forceFocusId = data.notes[currentFocusIdx+1].id;
+            if (notes[currentFocusIdx+1]) {
+                forceFocusId = notes[currentFocusIdx+1].id;
                 return;
             }
         } else if (direction === -1) {
-            if (data.notes[currentFocusIdx-1]) {
-                forceFocusId = data.notes[currentFocusIdx-1].id;
+            if (notes[currentFocusIdx-1]) {
+                forceFocusId = notes[currentFocusIdx-1].id;
                 return;
             }
         } else {
-            if (data.notes[currentFocusIdx+1]) {
-                forceFocusId = data.notes[currentFocusIdx+1].id;
+            if (notes[currentFocusIdx+1]) {
+                forceFocusId = notes[currentFocusIdx+1].id;
                 return;
-            } else if (data.notes[currentFocusIdx-1]) {
-                forceFocusId = data.notes[currentFocusIdx-1].id;
+            } else if (notes[currentFocusIdx-1]) {
+                forceFocusId = notes[currentFocusIdx-1].id;
                 return;
             }
         }
@@ -85,19 +94,6 @@
         DeleteNote(noteId)
             .then(() => {updateCollection()
             .then(() => {forceFocusChange(noteIdx-1, 0)})});
-    }
-
-    function makeFocusNode(node: HTMLElement) {
-        let range = document.createRange();
-        range.selectNodeContents(node);
-        range.collapse(false);
-
-        let sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-
-        node.focus();
-        range.detach();
     }
 
     // Ensure these key handlers are only accesible in editing mode
@@ -115,7 +111,6 @@
                 break;
         }
     }
-
 </script>
 
 <div class="page">
@@ -126,9 +121,9 @@
         changeViewMode={changeViewMode}
     />
     <div class="noteCollection" bind:this={collectionElement}>
-        {#if data.notes}
-            {#each data.notes as note, i}
-                <Note 
+        {#if notes}
+            {#each notes as note, i}
+                <NoteView 
                     bind:note={note} 
                     idx={i} 
                     editMode={editMode.id} 
@@ -138,13 +133,14 @@
             {/each}
             {#if editMode.id === 1 && !freeEditAppendOpen}
                 <div class="freeEditAppendBtn"
-                        on:click={() => freeEditAppendOpen = true}
+                        on:click={() => {
+                            freeEditAppendOpen = true;
+                            freeEditAppend(notes.length);
+                        }}
                         on:keypress={() => freeEditAppendOpen = true}>
                     <i class="bi bi-plus-lg"></i>
                     <div class="btnTxt">Append</div>
                 </div>
-            {:else if editMode.id === 1 && freeEditAppendOpen}
-                <div class="freeEditAppender"></div>
             {/if}
         {:else}
             <p>Loading Collection...</p>
