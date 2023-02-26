@@ -1,16 +1,24 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { UpdateNote } from "$lib/scripts/db";
 
     export let note: Note;
     export let idx: number;
     export let editMode: number;
-    export let forceFocusId: number;
+    export let forceFocusId: number | null;
     export let forceFocusChange: (x: number, y: number) => void;
     export let deleteNoteHandler: (x: number, y: number) => void;
 
     let node: HTMLElement;
     let hasFocus: boolean = false;
     let noteBeingSaved: boolean = false;
+
+    onMount(() => {
+        // Eventually for free edit appending.
+        if (note.id === -1) {
+            node.focus();
+        }
+    });
 
     $: if (forceFocusId === note.id) {
         forceFocus();
@@ -47,7 +55,7 @@
         switch (event.key) {
             case "Enter":
                 event.preventDefault();
-                forceFocusChange(idx, 1);
+                forceFocusChange(idx, 0);
                 return;
             case "Delete":
                 event.preventDefault();
@@ -55,11 +63,11 @@
                 return;
             case "ArrowDown":
                 event.preventDefault();
-                forceFocusChange(idx, 1);
+                forceFocusChange(idx, 2);
                 return;
             case "ArrowUp":
                 event.preventDefault();
-                forceFocusChange(idx, -1);
+                forceFocusChange(idx, 1);
                 return;
         }
     }
@@ -71,7 +79,7 @@
         bind:this={node}
         bind:innerHTML={note.content}
         on:keydown={freeEditKeyHandler}
-        on:focus={() => {hasFocus = true; forceFocusId = -1;}}
+        on:focus={() => {hasFocus = true; forceFocusId = null;}}
         on:blur={() => {onBlurHandler()}}
         placeholder="Empty notes are not saved">
     </div>

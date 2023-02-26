@@ -11,11 +11,9 @@
     let collectionId: number = data.collectionId;
     let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
-    let forceFocusId: number = -1;
+    let forceFocusId: number | null = null;
     let editMode = EditModes[data.editModeId];
     let viewMode = ViewModes[data.viewModeId];
-
-    let freeEditAppendOpen = false;
 
     WindowTitle.set(data.collectionName);
 
@@ -34,9 +32,13 @@
 
     function changeEditMode(modeSelection: number) {
         editMode = EditModes[modeSelection];
+        if (editMode.id === 0) {
+            setTimeout(() => {noteInput.focus()}, 0);
+        }
     }
 
     function freeEditAppend(idx: number) {
+        //freeEditAppendOpen = true;
         notes.splice(idx, 0, {id: -1, content: "", created_at: "", updated_at: ""});
         notes = notes;
     }
@@ -56,7 +58,7 @@
                 return +new Date(b.updated_at) - +new Date(a.updated_at);
             }); break;
         }
-        notes = notes; // Svelte reactivity feature.
+        notes = notes;
         viewMode = ViewModes[modeSelection];
     }
 
@@ -65,35 +67,44 @@
     }
 
     /**
-     * Direction: -1 down, 1 up, 0/else neutral.
+     * changeType:
+     * 0: Enter key
+     * 1: Arrow-Up
+     * 2: Arrow-Down
+     * 3: After Delete (neutral)
     */
-    function forceFocusChange(currentFocusIdx: number, direction: number) {
-        if (direction === 1) {
-            if (notes[currentFocusIdx+1]) {
-                forceFocusId = notes[currentFocusIdx+1].id;
-                return;
+    function forceFocusChange(currentFocusIdx: number, changeType: number) {
+        if (changeType === 0) {
+            if (viewMode.id <= 3) {
+                if (notes[currentFocusIdx+1]) {
+                    forceFocusId = notes[currentFocusIdx+1].id;
+                } else {
+                    changeEditMode(0);
+                }
+            } else {
+                // Free Edit Append Handling. May the Gods have mercy on your soul.
             }
-        } else if (direction === -1) {
+        } else if (changeType === 1) {
             if (notes[currentFocusIdx-1]) {
                 forceFocusId = notes[currentFocusIdx-1].id;
-                return;
             }
-        } else {
+        } else if (changeType === 2) {
             if (notes[currentFocusIdx+1]) {
                 forceFocusId = notes[currentFocusIdx+1].id;
-                return;
+            } 
+        } else if (changeType === 3) {
+            if (notes[currentFocusIdx+1]) {
+                forceFocusId = notes[currentFocusIdx+1].id;
             } else if (notes[currentFocusIdx-1]) {
                 forceFocusId = notes[currentFocusIdx-1].id;
-                return;
             }
         }
-        forceFocusId = -1;
     }
 
     async function deleteNoteHandler(noteId: number, noteIdx: number) {
         DeleteNote(noteId)
             .then(() => {updateCollection()
-            .then(() => {forceFocusChange(noteIdx-1, 0)})});
+            .then(() => {forceFocusChange(noteIdx-1, 3)})});
     }
 
     // Ensure these key handlers are only accesible in editing mode
@@ -131,17 +142,6 @@
                     forceFocusChange={forceFocusChange}
                     deleteNoteHandler={deleteNoteHandler} />
             {/each}
-            {#if editMode.id === 1 && !freeEditAppendOpen}
-                <div class="freeEditAppendBtn"
-                        on:click={() => {
-                            freeEditAppendOpen = true;
-                            freeEditAppend(notes.length);
-                        }}
-                        on:keypress={() => freeEditAppendOpen = true}>
-                    <i class="bi bi-plus-lg"></i>
-                    <div class="btnTxt">Append</div>
-                </div>
-            {/if}
         {:else}
             <p>Loading Collection...</p>
         {/if}
@@ -163,9 +163,11 @@
 
 <style>
     .page {
+        /* margin: 0 auto;
+        max-width: var(--usableWidth); */
+
         margin-top: var(--titlebarHeight);
         height: calc(100vh - var(--titlebarHeight));
-
         display: grid;
         grid-template-rows: min-content 1fr min-content;
     }
@@ -198,23 +200,6 @@
     [contenteditable=true]:empty:before {
         content:attr(placeholder);
         color: grey;
-    }
-
-    .freeEditAppendBtn {
-        color: #3cb452;
-        display: flex;
-        border: 1px solid;
-        width: fit-content;
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        align-items: center;
-        background-color: var(--textfieldColor);
-        cursor: pointer;
-        font-size: 0.9rem;
-    }
-    
-    .btnTxt {
-        margin-left: 0.5rem;
     }
 
     /* width */
