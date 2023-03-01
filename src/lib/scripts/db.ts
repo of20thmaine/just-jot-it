@@ -33,6 +33,10 @@ export async function GetCollection(collection_id: number, sort: SortTypes): Pro
         [collection_id, getOrderByStr(sort)]);
 }
 
+export async function GetCollectionList(): Promise<Collection[]> {
+    return await db.select("SELECT * FROM collections");
+}
+
 // export async function GetCollectionName(id: number): Promise<string> {
 //     return await db.select("SELECT name FROM collections WHERE id = $1", [id]);
 // }

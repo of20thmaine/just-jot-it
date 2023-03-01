@@ -14,6 +14,7 @@ fn main() {
             set_shadow(&window, true).expect("Unsupported platform!");
             Ok(())
         })
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_sql::Builder::default()
             .add_migrations("sqlite:notes.db", get_migrations())
             .build())

@@ -91,7 +91,7 @@
         transform: translate(-50%, -50%);
         background-color: var(--backgroundColor);
         border: 1px solid var(--hoverBtnColor);
-        min-width: 340px;
+        width: 340px;
     }
 
     .title {

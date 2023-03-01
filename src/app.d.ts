@@ -7,9 +7,7 @@ interface Note {
 
 interface Collection {
     id: number;
-    notes: Note[];
-    created_at: string;
-    updated_at: string;
+    name: string;
 }
 
 interface CollectionView {

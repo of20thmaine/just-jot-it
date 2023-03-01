@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/scripts/db";
+    import { SetLastOpenCollection } from "$lib/scripts/settings";
     import { WindowTitle } from "$lib/scripts/stores";
     import NoteView from "$lib/NoteView.svelte";
     import Toolbar from "$lib/Toolbar.svelte";
@@ -24,6 +25,15 @@
         if (editMode.id === 0) {
             setTimeout(() => {noteInput.focus()}, 0);
         }
+    });
+
+    onDestroy(() => {
+        SetLastOpenCollection({
+            collectionId: data.collectionId,
+            collectionName: data.collectionName,
+            editModeId: editMode.id,
+            viewModeId: viewMode.id
+        });
     });
 
     function jumpToPageEnd() {

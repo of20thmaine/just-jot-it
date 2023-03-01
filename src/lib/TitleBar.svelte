@@ -4,6 +4,7 @@
     import { onMount } from 'svelte';
     import { WindowTitle } from '$lib/scripts/stores';
     import CreateCollection from '$lib/CreateCollection.svelte';
+    import QuickNote from '$lib/QuickNote.svelte';
 
     let isDarkMode: boolean;
     let darkPath = "dark_";
@@ -16,6 +17,7 @@
     let showFileMenu = false;
 
     let showCreateCollection = false;
+    let showQuickNote = false;
 
     $: isDarkMode ? currentPath = darkPath : currentPath = lightPath;
 
@@ -43,7 +45,16 @@
                     on:click={() => showFileMenu = !showFileMenu}
                     on:keypress={() => showFileMenu = !showFileMenu}></div>
             <div class="dropdown">
-                <div class="dropdownItm">New note</div>
+                <div class="dropdownItm"
+                        on:click={() => {
+                                showFileMenu = !showFileMenu;
+                                showQuickNote = !showQuickNote;
+                            }}
+                        on:keypress={() => {
+                                showFileMenu = !showFileMenu;
+                                showQuickNote = !showQuickNote;
+                            }}>
+                    Quick Note...</div>
                 <div class="dropdownItm"
                         on:click={() => {
                                 showFileMenu = !showFileMenu;
@@ -88,10 +99,11 @@
 </div>
 
 {#if showCreateCollection}
-    <!-- <div class="blinder"
-        on:click={() => {showCreateCollection = !showCreateCollection}}
-        on:keypress={() => {showCreateCollection = !showCreateCollection}}></div> -->
     <CreateCollection bind:showCreateCollection={showCreateCollection} />
+{/if}
+
+{#if showQuickNote}
+    <QuickNote bind:showQuickNote={showQuickNote} />
 {/if}
 
 <style>
