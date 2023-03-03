@@ -10,6 +10,7 @@
     let showCollectionSelect: boolean = false;
     let selectedCollection: Collection;
     let errorString: string = "";
+    let successString: string = "";
 
     $: if (input) input.focus();
 
@@ -18,7 +19,7 @@
             .then((value) => {
                 collections = value[0];
                 let defaultId = value[1];
-                if (!defaultId) { defaultId = 1 }
+                if (!defaultId) defaultId = 1;
 
                 for (let collection of collections) {
                     if (collection.id === defaultId) {
@@ -27,6 +28,19 @@
                     }
                 }
             });
+    }
+
+    function createNote() {
+        if (note.length > 0) {
+            CreateNote(note, selectedCollection.id)
+                .then(() => {
+                    note = "";
+                    successString = "Note created in " + selectedCollection.name;
+                })
+                .catch(() => errorString = "Note failed to save.");
+        } else {
+            errorString = "Empty notes cannot be saved."
+        }
     }
 
     function keyHandler(event: KeyboardEvent): void {
@@ -40,13 +54,8 @@
                 showQuickNote = !showQuickNote;
                 return;
         }
-    }
-
-    function createNote() {
-        if (note.length > 0) {
-            CreateNote(note, selectedCollection.id)
-                .then(() => note = "");
-        }
+        if (errorString.length > 0) errorString = "";
+        if (successString.length > 0) successString = "";
     }
 </script>
 
@@ -95,13 +104,25 @@
         bind:innerHTML={note}
         placeholder="Create new note">
     </div>
-    {#if errorString.length > 0}
-        <div class="errorString">{errorString}</div>
-    {/if}
-    <div class="createBtn"
-            on:click={() => createNote()}
-            on:keypress={() => createNote()}>
-        <i class="bi bi-plus"></i> Create</div>
+
+    <div class="footer">
+        <div class="messages">
+            {#if errorString.length > 0}
+                <div class="errorString">{errorString}</div>
+            {/if}
+            {#if successString.length > 0}
+                <div class="successString">{successString}</div>
+            {/if}
+        </div>
+        <div class="createBtn"
+                on:click={() => createNote()}
+                on:keypress={() => createNote()}>
+            <i class="bi bi-plus"></i> Create
+        </div>
+    </div>
+
+
+
 </div>
 {/await}
 
@@ -182,8 +203,8 @@
 
     .closeBtn {
         position: fixed;
-        top: 0.3rem;
-        right: 0.3rem;
+        top: 0.5rem;
+        right: 0.5rem;
         color: var(--fontColor);
         font-size: 1.25rem;
         cursor: pointer;
@@ -198,7 +219,7 @@
         background-color: var(--textfieldColor);
         padding: 0.5rem;
         color: var(--fontColor);
-        margin: 1.0rem 0.75rem 1.0rem 0.75rem;
+        margin: 1.0rem 0.75rem;
         line-height: 1.84rem;
         min-height: 5.52rem;
         font-size: 1.15rem;
@@ -209,10 +230,22 @@
         color: grey;
     }
 
+    .footer {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        margin: 0 0.75rem 1.0rem 0.75rem;
+    }
+
+    .messages {
+        font-size: 0.9rem;
+    }
+
     .errorString {
         color: #BE3455;
-        font-size: 0.9rem;
-        margin: -0.5rem 1.0rem 0.5rem 1.0rem;
+    }
+
+    .successString {
+        color: #3cb452;
     }
 
     .createBtn {
@@ -223,9 +256,8 @@
         padding: 0.25rem 1.0rem;
         border: 2px solid rgba(255, 255, 255, 0.2);
         border-radius: 4px;
-        float: right;
-        margin: 0 0.75rem 0.75rem 0;
         cursor: pointer;
+        margin-left: 0.25rem;
     }
 
     .createBtn:hover {

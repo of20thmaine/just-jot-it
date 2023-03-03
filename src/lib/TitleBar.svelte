@@ -132,9 +132,8 @@
 
     .title {
         margin: 0 auto;
-        color: var(--fontColor);
+        color: #d7b474;
         font-size: 0.9rem;
-        font-style: italic;
     }
 
     .icon {

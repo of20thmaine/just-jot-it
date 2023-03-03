@@ -24,5 +24,4 @@ CREATE TABLE "collections" (
     "name" TEXT UNIQUE,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-)
-
+);

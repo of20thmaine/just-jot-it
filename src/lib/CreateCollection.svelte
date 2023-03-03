@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { CreateCollection } from "$lib/scripts/db";
 
     export let showCreateCollection: boolean;
@@ -8,7 +7,7 @@
     let collectionName: string = "";
     let errorString: string = "";
 
-    onMount(() => setTimeout(() => {input.focus(), 0}));
+    $: if (input) input.focus();
 
     function keyHandler(event: KeyboardEvent): void {
         switch (event.key) {
@@ -20,7 +19,7 @@
                 showCreateCollection = !showCreateCollection;
                 return;
         }
-        if (errorString.length > 0) {errorString = ""}
+        if (errorString.length > 0) errorString = "";
     }
 
     function createCollection() {
@@ -61,13 +60,18 @@
         bind:innerHTML={collectionName}
         placeholder="Enter collection name">
     </div>
-    {#if errorString.length > 0}
-        <div class="errorString">{errorString}</div>
-    {/if}
-    <div class="createBtn"
-            on:click={() => createCollection()}
-            on:keypress={() => createCollection()}>
-        <i class="bi bi-plus"></i> Create</div>
+    <div class="footer">
+        <div class="messages">
+            {#if errorString.length > 0}
+                <div class="errorString">{errorString}</div>
+            {/if}
+        </div>
+        <div class="createBtn"
+                on:click={() => createCollection()}
+                on:keypress={() => createCollection()}>
+            <i class="bi bi-plus"></i> Create
+        </div>
+    </div>
 </div>
 
 
@@ -102,8 +106,8 @@
 
     .closeBtn {
         position: fixed;
-        top: 0.3rem;
-        right: 0.3rem;
+        top: 0.5rem;
+        right: 0.5rem;
         color: var(--fontColor);
         font-size: 1.25rem;
         cursor: pointer;
@@ -126,10 +130,18 @@
         color: grey;
     }
 
+    .footer {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        margin: 0 0.75rem 1.0rem 0.75rem;
+    }
+
+    .messages {
+        font-size: 0.9rem;
+    }
+
     .errorString {
         color: #BE3455;
-        font-size: 0.9rem;
-        margin: -0.5rem 1.0rem 0.5rem 1.0rem;
     }
 
     .createBtn {
@@ -140,9 +152,8 @@
         padding: 0.25rem 1.0rem;
         border: 2px solid rgba(255, 255, 255, 0.2);
         border-radius: 4px;
-        float: right;
-        margin: 0 0.75rem 0.75rem 0;
         cursor: pointer;
+        margin-left: 0.25rem;
     }
 
     .createBtn:hover {

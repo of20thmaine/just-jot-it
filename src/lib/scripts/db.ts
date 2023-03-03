@@ -37,6 +37,10 @@ export async function GetCollectionList(): Promise<Collection[]> {
     return await db.select("SELECT * FROM collections");
 }
 
+export async function GetCollections(): Promise<CollectionSelection[]> {
+    return await db.select("SELECT id, name, (SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, (SELECT MAX(updated_at) FROM notes WHERE notes.collection_id = collections.id) last_modified FROM collections ORDER BY last_modified DESC");
+}
+
 // export async function GetCollectionName(id: number): Promise<string> {
 //     return await db.select("SELECT name FROM collections WHERE id = $1", [id]);
 // }
