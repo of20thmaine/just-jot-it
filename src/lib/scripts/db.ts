@@ -38,7 +38,20 @@ export async function GetCollectionList(): Promise<Collection[]> {
 }
 
 export async function GetCollections(): Promise<CollectionSelection[]> {
-    return await db.select("SELECT id, name, (SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, (SELECT MAX(updated_at) FROM notes WHERE notes.collection_id = collections.id) last_modified FROM collections ORDER BY last_modified DESC");
+    return await db.select("SELECT id, name, " + 
+                            "(SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, " +
+	                        "last_open, favorite FROM collections ORDER BY last_open DESC");
+}
+
+export async function GetFavorites(): Promise<CollectionSelection[]> {
+    return await db.select("SELECT id, name, " + 
+                            "(SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, " +
+	                        "last_open, favorite FROM collections WHERE favorite = 1 ORDER BY last_open DESC");
+}
+
+export async function ToggleCollectionFavorite(collection_id: number, isFavorite: boolean): Promise<QueryResult> {
+    let value = isFavorite ? 1 : 0;
+    return await db.execute("UPDATE collections SET favorite = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 ", [value, collection_id]);
 }
 
 // export async function GetCollectionName(id: number): Promise<string> {

@@ -21,5 +21,6 @@ interface CollectionSelection {
     id: number;
     name: string;
     note_count: number;
-    last_modified: string;
+    last_open: string;
+    favorite: boolean;
 }
