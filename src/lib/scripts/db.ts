@@ -51,7 +51,11 @@ export async function GetFavorites(): Promise<CollectionSelection[]> {
 
 export async function ToggleCollectionFavorite(collection_id: number, isFavorite: boolean): Promise<QueryResult> {
     let value = isFavorite ? 1 : 0;
-    return await db.execute("UPDATE collections SET favorite = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 ", [value, collection_id]);
+    return await db.execute("UPDATE collections SET favorite = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", [value, collection_id]);
+}
+
+export async function UpdateCollectionLastOpen(collection_id: number): Promise<QueryResult> {
+    return await db.execute("UPDATE collections SET last_open = CURRENT_TIMESTAMP WHERE id = $1", [collection_id]);
 }
 
 // export async function GetCollectionName(id: number): Promise<string> {

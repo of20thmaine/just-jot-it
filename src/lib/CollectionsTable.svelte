@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GetCollections, ToggleCollectionFavorite } from "$lib/scripts/db";
+    import { ToggleCollectionFavorite } from "$lib/scripts/db";
 
     export let collections: CollectionSelection[];
     export let updateCollections: () => Promise<void>;

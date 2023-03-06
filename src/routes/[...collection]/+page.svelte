@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes } from "$lib/scripts/db";
+    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes, UpdateCollectionLastOpen } from "$lib/scripts/db";
     import { SetLastOpenCollection } from "$lib/scripts/settings";
     import { WindowTitle } from "$lib/scripts/stores";
     import NoteView from "$lib/NoteView.svelte";
@@ -19,6 +19,7 @@
     WindowTitle.set(data.collectionName);
 
     GetCollection(data.collectionId, viewMode.type).then((value) => {notes = value });
+    UpdateCollectionLastOpen(data.collectionId);
     
     onMount(() => {
         jumpToPageEnd();
@@ -156,7 +157,6 @@
             <p>Loading Collection...</p>
         {/if}
     </div>
-
     {#if editMode.id === 0}
         <div class="noteEntry">
             <div class="inputArea">
@@ -210,6 +210,8 @@
     [contenteditable=true]:empty:before {
         content:attr(placeholder);
         color: grey;
+        user-select: none;
+        cursor: text;
     }
 
     /* width */

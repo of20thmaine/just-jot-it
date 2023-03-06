@@ -3,21 +3,18 @@
     import { exit } from '@tauri-apps/api/process';
     import { onMount } from 'svelte';
     import { WindowTitle } from '$lib/scripts/stores';
+    import { goto } from '$app/navigation';
     import CreateCollection from '$lib/CreateCollection.svelte';
-    import QuickNote from '$lib/QuickNote.svelte';
 
     let isDarkMode: boolean;
     let darkPath = "dark_";
     let lightPath = "light_";
     let currentPath = "";
-    
-    let windowTitle: string = "";
-    WindowTitle.subscribe(value => {windowTitle = value});
-
     let showFileMenu = false;
-
     let showCreateCollection = false;
-    let showQuickNote = false;
+    let windowTitle: string = "";
+    
+    WindowTitle.subscribe(value => {windowTitle = value});
 
     $: isDarkMode ? currentPath = darkPath : currentPath = lightPath;
 
@@ -48,11 +45,11 @@
                 <div class="dropdownItm"
                         on:click={() => {
                                 showFileMenu = !showFileMenu;
-                                showQuickNote = !showQuickNote;
+                                goto("/quicknote");
                             }}
                         on:keypress={() => {
                                 showFileMenu = !showFileMenu;
-                                showQuickNote = !showQuickNote;
+                                goto("/quicknote");
                             }}>
                     Quick Note...</div>
                 <div class="dropdownItm"
@@ -100,10 +97,6 @@
 
 {#if showCreateCollection}
     <CreateCollection bind:showCreateCollection={showCreateCollection} />
-{/if}
-
-{#if showQuickNote}
-    <QuickNote bind:showQuickNote={showQuickNote} />
 {/if}
 
 <style>

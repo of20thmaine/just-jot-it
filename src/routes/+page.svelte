@@ -22,7 +22,6 @@
         return Promise.all([GetFavorites(), GetCollections()])
             .then((value) => {
                 favorites = value[0];
-                console.log(favorites)
                 collections = value[1];
             });
     }

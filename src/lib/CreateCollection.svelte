@@ -1,5 +1,6 @@
 <script lang="ts">
     import { CreateCollection } from "$lib/scripts/db";
+    import { goto } from '$app/navigation';
 
     export let showCreateCollection: boolean;
 
@@ -29,12 +30,12 @@
             } else {
                 CreateCollection(collectionName)
                     .catch((reason) => {
-                        console.log(reason);
                         errorString = "Collection name already exists.";
                     })
                     .then((onfulfilled) => {
                         if (onfulfilled) {
                             showCreateCollection = !showCreateCollection;
+                            goto("/" + onfulfilled.lastInsertId + "/" + collectionName + "/0/0");
                         }
                     });
             }
@@ -128,6 +129,8 @@
     [contenteditable=true]:empty:before {
         content:attr(placeholder);
         color: grey;
+        user-select: none;
+        cursor: text;
     }
 
     .footer {
