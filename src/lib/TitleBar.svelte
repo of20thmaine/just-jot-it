@@ -1,8 +1,7 @@
 <script lang="ts">
     import { appWindow } from '@tauri-apps/api/window';
     import { exit } from '@tauri-apps/api/process';
-    import { onMount } from 'svelte';
-    import { WindowTitle } from '$lib/scripts/stores';
+    import { ColorModeIsDark, WindowTitle } from '$lib/scripts/stores';
     import { goto } from '$app/navigation';
     import CreateCollection from '$lib/CreateCollection.svelte';
 
@@ -15,25 +14,20 @@
     let windowTitle: string = "";
     
     WindowTitle.subscribe(value => {windowTitle = value});
+    ColorModeIsDark.subscribe(value => isDarkMode = value);
 
     $: isDarkMode ? currentPath = darkPath : currentPath = lightPath;
-
-    onMount(() => {
-        isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener("change", () => {
-            isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        });
-    });
 </script>
 
 <div data-tauri-drag-region class="titlebar">
-    <div class="icon">
-        <img
-            src="../tauri.svg"
-            alt="Logo"
-        />
-    </div>
+    <a href="/">
+        <div class="icon">
+            <img
+                src="../logo.png"
+                alt="Logo"
+            />
+        </div>
+    </a>
     <div class="menuSelection"
             on:click={() => showFileMenu = !showFileMenu}
             on:keypress={() => showFileMenu = !showFileMenu}>File</div>
@@ -62,6 +56,16 @@
                                 showCreateCollection = !showCreateCollection;
                             }}>
                     New Collection...</div>
+                    <div class="dropdownItm"
+                        on:click={() => {
+                                showFileMenu = !showFileMenu;
+                                goto("/settings");
+                            }}
+                        on:keypress={() => {
+                                showFileMenu = !showFileMenu;
+                                goto("/settings");
+                            }}>
+                    Settings...</div>
                 <div class="dropdownItm"
                         on:click={async () => {await exit(1)}}
                         on:keypress={async () => {await exit(1);}}>

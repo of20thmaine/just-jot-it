@@ -213,24 +213,4 @@
         user-select: none;
         cursor: text;
     }
-
-    /* width */
-    ::-webkit-scrollbar {
-        width: 16px;
-    }
-
-    /* Track */
-    ::-webkit-scrollbar-track {
-        box-shadow: none;
-    }
-
-    /* Handle */
-    ::-webkit-scrollbar-thumb {
-        background: #252526; 
-    }
-
-    /* Handle on hover */
-    ::-webkit-scrollbar-thumb:hover {
-        background: #2d2d2d; 
-    }
 </style>

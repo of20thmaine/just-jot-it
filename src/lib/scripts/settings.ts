@@ -17,3 +17,11 @@ export async function SetDefaultCollection(collectionId: number) {
 export async function GetDefaultCollection() {
     return store.get("default-collection");
 }
+
+export async function SetColorModeIsDark(isDarkMode: boolean) {
+    return store.set("color-mode", isDarkMode);
+}
+
+export async function GetColorModeIsDark() {
+    return store.get("color-mode");
+}

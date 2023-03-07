@@ -98,6 +98,10 @@
 </div>
 
 <style>
+    .collections {
+        margin-bottom: 1.0rem;
+    }
+    
     .row {
         display: grid;
         grid-template-columns: 40px 1fr 100px 140px;

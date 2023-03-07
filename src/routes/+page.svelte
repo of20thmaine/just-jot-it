@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { GetCollections, GetFavorites, ToggleCollectionFavorite } from "$lib/scripts/db";
+    import { GetCollections, GetFavorites } from "$lib/scripts/db";
     import { GetLastOpenCollection } from "$lib/scripts/settings";
     import { WindowTitle } from "$lib/scripts/stores";
     import CollectionsTable from "$lib/CollectionsTable.svelte";
@@ -26,18 +26,29 @@
             });
     }
 </script>
-
+<div class="scroller">
 <div class="page">
-
-    <!-- {#if lastOpenView}
-        <div class="header">Last Open</div>
-        <a href="{lastOpenView.collectionId + "/" + lastOpenView.collectionName +
-                "/" + lastOpenView.editModeId + "/" + lastOpenView.viewModeId}">
-            <div class="row">
-                <div class="co"></div>
-            </div>
-        </a>
-    {/if} -->
+    <div class="pageTop">
+        <div class="lastOpen">
+            {#if lastOpenView}
+                <div class="header">Last Open</div>
+                <a href="{lastOpenView.collectionId + "/" + lastOpenView.collectionName +
+                        "/" + lastOpenView.editModeId + "/" + lastOpenView.viewModeId}">
+                    <div class="lastOpenCollection"><i class="bi bi-arrow-return-right"></i> {lastOpenView.collectionName}</div>
+                </a>
+            {:else}
+                <a href="1/*/0/0">
+                    <div class="default">
+                        <div class="collection">[Default]</div>
+                    </div>    
+                </a>
+            {/if}
+        </div>
+        <div class="btnGroup">
+            <a href="quicknote"><div class="homeBtn quicknote"><i class="bi bi-pencil-square"></i> Quick Note</div></a>
+            <a href="quicknote"><div class="homeBtn createcoll"><i class="bi bi-plus-lg"></i> Create Collection</div></a>
+        </div>
+    </div>
 
     {#if favorites && favorites.length > 0}
         <div class="header">Favorites</div>
@@ -48,41 +59,62 @@
         <div class="header">Collections</div>
         <CollectionsTable bind:collections={collections} updateCollections={updateCollections} />
     {/if}
-
-
-    <!-- {#if lastOpenView}
-        <div class="btnLbl">Last Open:</div>
-        <a href="{lastOpenView.collectionId 
-                + "/" + lastOpenView.collectionName + "/" 
-                + lastOpenView.editModeId + "/" + lastOpenView.viewModeId}">
-            <div class="lastOpen">
-                <div class="collection">[Last Open]</div>
-            </div>    
-        </a>
-    {/if}
-
-    <div class="btnLbl">Default:</div>
-    <a href="1/*/0/0">
-        <div class="lastOpen">
-            <div class="collection">[Default]</div>
-        </div>    
-    </a> -->
-
+</div>
 </div>
 
 <style>
+    .scroller {
+        margin-top: var(--titlebarHeight);
+        height: calc(100vh - var(--titlebarHeight));
+        overflow-y: auto;
+    }
+
     .page {
         margin: 0 auto;
-        margin-top: var(--titlebarHeight);
         max-width: 600px;
         padding: 1.0rem;
+        overflow-y: auto;
+    }
+
+    .pageTop {
+        display: grid;
+        grid-template-columns: 1fr 240px;
+        column-gap: 1.0rem;
+        margin-bottom: 1.0rem;
     }
 
     .header {
         color: var(--fontColor);
         font-size: 1.5rem;
         border-bottom: 1px solid;
-        margin: 1.0rem 0;
+        margin-bottom: 1.0rem;
         padding: 0.5rem;
+    }
+
+    .lastOpenCollection {
+        color: var(--fontColor);
+        font-size: 1.15rem;
+    }
+
+    .homeBtn {
+        font-size: 1.2rem;
+        text-align: center;
+        width: 100%;
+        padding: 0.5rem 0;
+        border: 1px solid;
+        border-radius: 4px;
+        margin-top: 1.0rem;
+    }
+
+    .quicknote {
+        color: #6667ab;
+    }
+
+    .createcoll {
+        color: #34be7b;
+    }
+
+    a {
+        text-decoration: none;
     }
 </style>
