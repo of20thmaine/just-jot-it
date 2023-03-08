@@ -20,12 +20,11 @@
 
     GetCollection(data.collectionId, viewMode.type).then((value) => {notes = value });
     UpdateCollectionLastOpen(data.collectionId);
+
+    $: if (noteInput) noteInput.focus();
     
     onMount(() => {
         jumpToPageEnd();
-        if (editMode.id === 0) {
-            setTimeout(() => {noteInput.focus()}, 0);
-        }
     });
 
     onDestroy(() => {
@@ -173,9 +172,6 @@
 
 <style>
     .page {
-        /* margin: 0 auto;
-        max-width: var(--usableWidth); */
-
         margin-top: var(--titlebarHeight);
         height: calc(100vh - var(--titlebarHeight));
         display: grid;
