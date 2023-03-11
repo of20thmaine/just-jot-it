@@ -1,3 +1,4 @@
+
 interface Note {
     id: number;
     content: string;
@@ -14,7 +15,8 @@ interface CollectionView {
     collectionId: number;
     collectionName: string;
     editModeId: number;
-    viewModeId: number;
+    viewCategoryId: number;
+    viewOptionId: number;
 }
 
 interface CollectionSelection {
@@ -24,3 +26,38 @@ interface CollectionSelection {
     last_open: string;
     favorite: boolean;
 }
+
+interface PositionedNote {
+    id: number;
+    content: string;
+    created_at: string;
+    updated_at: string;
+    position: number;
+}
+
+interface Positional {
+    id: number;
+    name: string;
+    created_at: string;
+    last_open: string;
+}
+
+interface Sortable {
+    id: number;
+    name: string;
+    sort: SortType;
+    ico: string;
+}
+
+interface ViewModeCategory {
+    id: number;
+    name: string;
+    ico: string;
+    options: Sortable[] | Positional[];
+}
+
+
+
+
+
+

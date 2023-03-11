@@ -1,25 +1,38 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
-    import { CreateNote, GetCollection, DeleteNote, EditModes, ViewModes, UpdateCollectionLastOpen } from "$lib/scripts/db";
-    import { SetLastOpenCollection } from "$lib/scripts/settings";
+    import { onMount } from "svelte";
+    import { CreateNote, GetCollection, DeleteNote, UpdateCollectionLastOpen } from "$lib/scripts/db";
+    import { DefaultViewModes, EditModes, SetCollectionView, GetCollectionView } from "$lib/scripts/settings";
     import { WindowTitle } from "$lib/scripts/stores";
     import NoteView from "$lib/NoteView.svelte";
     import Toolbar from "$lib/Toolbar.svelte";
 
-    export let data: CollectionView;
+    export let data: Collection;
+    let view: CollectionView;
+
+
+    let collectionId: number = data.collectionId;
+    let editMode = EditModes[data.editModeId];
+    let viewCategoryId: number = data.viewCategoryId;
+    let viewOptionId: number = data.viewOptionId;
+
+
 
     let notes: Note[];
-    let collectionId: number = data.collectionId;
     let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
     let forceFocusId: number | null = null;
-    let editMode = EditModes[data.editModeId];
-    let viewMode = ViewModes[data.viewModeId];
+    let viewModes: ViewModeCategory[] = DefaultViewModes; // Add code to append positionals on load.
+    let viewMode: Sortable | Positional = viewModes[viewCategoryId].options[viewOptionId];
 
-    WindowTitle.set(data.collectionName);
 
-    GetCollection(data.collectionId, viewMode.type).then((value) => {notes = value });
-    UpdateCollectionLastOpen(data.collectionId);
+
+
+    WindowTitle.set(data.name);
+
+    if (instanceOfSortable(viewMode)) {
+        GetCollection(data.id, viewMode.sort).then((value) => {notes = value });
+    } // else positional
+    UpdateCollectionLastOpen(data.id);
 
     $: if (noteInput) noteInput.focus();
     
@@ -27,14 +40,13 @@
         jumpToPageEnd();
     });
 
-    onDestroy(() => {
-        SetLastOpenCollection({
-            collectionId: data.collectionId,
-            collectionName: data.collectionName,
-            editModeId: editMode.id,
-            viewModeId: viewMode.id
-        });
-    });
+    async function initialDataLoad() {
+        
+    }
+
+    function instanceOfSortable(obj: any): obj is Sortable {
+        return "sort" in obj;
+    }
 
     function jumpToPageEnd() {
         collectionElement.scrollTop = collectionElement.scrollHeight;
@@ -42,7 +54,7 @@
 
     function changeEditMode(modeSelection: number) {
         editMode = EditModes[modeSelection];
-        if (editMode.id === 0) {
+        if (editMode.id === 1) {
             setTimeout(() => {noteInput.focus()}, 0);
         }
     }
@@ -53,27 +65,31 @@
         notes = notes;
     }
 
-    function changeViewMode(modeSelection: number) {
-        switch (modeSelection) {
-            case 0: notes.sort((a, b) => {
-                return +new Date(a.created_at) - +new Date(b.created_at);
-            }); break;
-            case 1: notes.sort((a, b) => {
-                return +new Date(b.created_at) - +new Date(a.created_at);
-            }); break;
-            case 2: notes.sort((a, b) => {
-                return +new Date(a.updated_at) - +new Date(b.updated_at);
-            }); break;
-            case 3: notes.sort((a, b) => {
-                return +new Date(b.updated_at) - +new Date(a.updated_at);
-            }); break;
-        }
+    function changeViewMode(categoryId: number, optionId: number) {
+        if (categoryId < 3) {
+            switch (optionId) {
+                case 1: notes.sort((a, b) => {
+                    return +new Date(a.created_at) - +new Date(b.created_at);
+                }); break;
+                case 2: notes.sort((a, b) => {
+                    return +new Date(b.created_at) - +new Date(a.created_at);
+                }); break;
+                case 3: notes.sort((a, b) => {
+                    return +new Date(a.updated_at) - +new Date(b.updated_at);
+                }); break;
+                case 4: notes.sort((a, b) => {
+                    return +new Date(b.updated_at) - +new Date(a.updated_at);
+                }); break;
+            }
+        } // else positional
         notes = notes;
-        viewMode = ViewModes[modeSelection];
+        viewMode = viewModes[categoryId].options[optionId];
     }
 
     async function updateCollection() {
-        notes = await GetCollection(data.collectionId, viewMode.type);
+        if (instanceOfSortable(viewMode)) {
+            notes = await GetCollection(data.collectionId, viewMode.sort);
+        }
     }
 
     /**
@@ -92,7 +108,7 @@
                     changeEditMode(0);
                 }
             } else {
-                // Free Edit Append Handling. May the Gods have mercy on your soul.
+                // Positional
             }
         } else if (changeType === 1) {
             if (notes[currentFocusIdx-1]) {
@@ -138,32 +154,37 @@
     <Toolbar
         editMode={editMode}
         viewMode={viewMode}
+        viewModes={viewModes}
         changeEditMode={changeEditMode}
         changeViewMode={changeViewMode}
     />
-    <div class="noteCollection" bind:this={collectionElement}>
-        {#if notes}
-            {#each notes as note, i}
-                <NoteView 
-                    bind:note={note} 
-                    idx={i} 
-                    editMode={editMode.id} 
-                    bind:forceFocusId={forceFocusId} 
-                    forceFocusChange={forceFocusChange}
-                    deleteNoteHandler={deleteNoteHandler} />
-            {/each}
-        {:else}
-            <p>Loading Collection...</p>
-        {/if}
+    <div class="outerCollection" bind:this={collectionElement}>
+        <div class="noteCollection">
+            {#if notes}
+                {#each notes as note, i}
+                    <NoteView 
+                        bind:note={note} 
+                        idx={i} 
+                        editMode={editMode.id} 
+                        bind:forceFocusId={forceFocusId} 
+                        forceFocusChange={forceFocusChange}
+                        deleteNoteHandler={deleteNoteHandler} />
+                {/each}
+            {:else}
+                <p>Loading Collection...</p>
+            {/if}
+        </div>
     </div>
-    {#if editMode.id === 0}
-        <div class="noteEntry">
-            <div class="inputArea">
-                <div class="noteInput"
-                    contenteditable="true"
-                    on:keydown={editingKeyHandler}
-                    bind:this={noteInput}
-                    placeholder="Append new note">
+    {#if editMode.id === 1}
+        <div class="outerEntry">
+            <div class="noteEntry">
+                <div class="inputArea">
+                    <div class="noteInput"
+                        contenteditable="true"
+                        on:keydown={editingKeyHandler}
+                        bind:this={noteInput}
+                        placeholder="Append new note">
+                    </div>
                 </div>
             </div>
         </div>
@@ -178,15 +199,27 @@
         grid-template-rows: min-content 1fr min-content;
     }
 
-    .noteCollection {
-        padding: 0.5rem 1.0rem;
+    .outerCollection {
+        width: 100%;
         overflow-y: auto;
     }
 
+    .noteCollection {
+        margin: 0 auto;
+        max-width: var(--usableWidth);
+        padding: 0.5rem 1.0rem;
+    }
+
+    .outerEntry {
+        border-top: 1px solid var(--hoverBtnColor);
+        width: 100%;
+    }
+
     .noteEntry {
+        margin: 0 auto;
+        max-width: var(--usableWidth);
         min-height: 8.0rem;
         padding: 0.5rem;
-        border-top: 1px solid var(--hoverBtnColor);
     }
 
     .inputArea {

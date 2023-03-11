@@ -1,11 +1,9 @@
 import type { PageLoad } from './$types';
 
-export const load: PageLoad<CollectionView> = async ({ params }) => {
-    const [collectionId, collectionName, editModeId, viewModeId] = params.collection.split('/');
+export const load: PageLoad<Collection> = async ({ params }) => {
+    const [collectionId, collectionName ] = params.collection.split('/');
     return {
-        collectionId: +collectionId,
-        collectionName: collectionName,
-        editModeId: +editModeId,
-        viewModeId: +viewModeId,
+        id: +collectionId,
+        name: collectionName
     };
 };

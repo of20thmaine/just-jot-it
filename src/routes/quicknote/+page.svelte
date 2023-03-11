@@ -67,7 +67,7 @@
             <div class="title">Quick Note</div>
             <div class="collectionPrompt">
                 <i class="bi bi-arrow-return-right icoRestraint"></i>
-                <div class="selector" class:selectorSelected={showCollectionSelect}
+                <div class="selector qnSelector" class:selectorSelected={showCollectionSelect}
                         on:click={() => {showCollectionSelect = !showCollectionSelect}}
                         on:keypress={() => {showCollectionSelect = !showCollectionSelect}}>
                     <div class="selected">{selectedCollection.name}</div>
@@ -78,7 +78,7 @@
                 <div class="blinder"
                     on:click={() => {showCollectionSelect = !showCollectionSelect}}
                     on:keypress={() => {showCollectionSelect = !showCollectionSelect}}></div>
-                <div class="selectorMenu">
+                <div class="selectorMenu qnSelMen ">
                 {#each collections as collection}
                     <div class="opt"
                             on:click={() => {
@@ -143,22 +143,9 @@
         align-items: center;
     }
 
-    .selector {
-        display: flex;
-        align-items: center;
-        background-color: var(--textfieldColor);
-        cursor: pointer;
-        user-select: none;
+    .qnSelector {
         padding: 0.5rem 1.0rem 0.5rem 0.5rem;
         width: 220px;
-        border: 1px solid transparent;
-        border-radius: 4px;
-    }
-
-    .selectorSelected {
-        border: 1px solid var(--fontColor);
-        background-color: var(--fontColor);
-        color: var(--textfieldColor);
     }
 
     .icoRestraint {
@@ -166,29 +153,9 @@
         height: auto;
     }
 
-    .selectorMenu {
-        position: fixed;
-        margin-top: -4px;
+    .qnSelMen {
         margin-left: 24px;
-        z-index: 3;
-        color: var(--fontColor);
         width: 220px;
-        border-right: 1px solid;
-        border-bottom: 1px solid;
-        border-left: 1px solid;
-        background-color: var(--textfieldColor);
-        cursor: pointer;
-        user-select: none;
-        border-bottom-left-radius: 4px;
-        border-bottom-right-radius: 4px;
-    }
-
-    .opt {
-        padding: 0.5rem 1.0rem 0.5rem 0.5rem;
-    }
-
-    .opt:hover {
-        background-color: var(--highlightColor);
     }
 
     .rI {

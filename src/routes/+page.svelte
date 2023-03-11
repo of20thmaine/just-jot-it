@@ -1,20 +1,15 @@
 <script lang="ts">
-    import { GetCollections, GetFavorites } from "$lib/scripts/db";
-    import { GetLastOpenCollection } from "$lib/scripts/settings";
+    import { GetCollections, GetFavorites, GetLastOpenCollection } from "$lib/scripts/db";
     import { WindowTitle } from "$lib/scripts/stores";
     import CollectionsTable from "$lib/CollectionsTable.svelte";
 
     WindowTitle.set("Home");
 
-    const DefaultView: CollectionView = {
-        collectionId: 1, collectionName: "*", editModeId: 0, viewModeId: 0
-    };
-
-    let lastOpenView: CollectionView | null;
+    let lastOpen: Collection | null;
     let collections: CollectionSelection[];
     let favorites: CollectionSelection[];
 
-    GetLastOpenCollection().then((value) => lastOpenView = value as CollectionView | null);
+    GetLastOpenCollection().then((value) => lastOpen = value);
 
     updateCollections();
 
@@ -26,40 +21,42 @@
             });
     }
 </script>
+
 <div class="scroller">
-<div class="page">
-    <div class="pageTop">
-        <div class="lastOpen">
-            {#if lastOpenView}
-                <div class="header">Last Open</div>
-                <a href="{lastOpenView.collectionId + "/" + lastOpenView.collectionName +
-                        "/" + lastOpenView.editModeId + "/" + lastOpenView.viewModeId}">
-                    <div class="lastOpenCollection"><i class="bi bi-arrow-return-right"></i> {lastOpenView.collectionName}</div>
-                </a>
-            {:else}
-                <a href="1/*/0/0">
-                    <div class="default">
-                        <div class="collection">[Default]</div>
-                    </div>    
-                </a>
-            {/if}
+    <div class="page">
+        <div class="pageTop">
+            <div class="lastOpen">
+                {#if lastOpen}
+                    <div class="header">Last Open</div>
+                    <a href="{lastOpen.id + "/" + lastOpen.name}">
+                        <div class="lastOpenCollection">
+                            <i class="bi bi-arrow-return-right"></i> {lastOpen.name}
+                        </div>
+                    </a>
+                {:else}
+                    <a href="1/Jottlr">
+                        <div class="default">
+                            <div class="collection">[Default]</div>
+                        </div>    
+                    </a>
+                {/if}
+            </div>
+            <div class="btnGroup">
+                <a href="quicknote"><div class="homeBtn quicknote"><i class="bi bi-pencil-square"></i> Quick Note</div></a>
+                <a href="quicknote"><div class="homeBtn createcoll"><i class="bi bi-plus-lg"></i> Create Collection</div></a>
+            </div>
         </div>
-        <div class="btnGroup">
-            <a href="quicknote"><div class="homeBtn quicknote"><i class="bi bi-pencil-square"></i> Quick Note</div></a>
-            <a href="quicknote"><div class="homeBtn createcoll"><i class="bi bi-plus-lg"></i> Create Collection</div></a>
-        </div>
+
+        {#if favorites && favorites.length > 0}
+            <div class="header">Favorites</div>
+            <CollectionsTable bind:collections={favorites} updateCollections={updateCollections} />
+        {/if}
+
+        {#if collections}
+            <div class="header">Collections</div>
+            <CollectionsTable bind:collections={collections} updateCollections={updateCollections} />
+        {/if}
     </div>
-
-    {#if favorites && favorites.length > 0}
-        <div class="header">Favorites</div>
-        <CollectionsTable bind:collections={favorites} updateCollections={updateCollections} />
-    {/if}
-
-    {#if collections}
-        <div class="header">Collections</div>
-        <CollectionsTable bind:collections={collections} updateCollections={updateCollections} />
-    {/if}
-</div>
 </div>
 
 <style>
@@ -71,9 +68,8 @@
 
     .page {
         margin: 0 auto;
-        max-width: 600px;
+        max-width: var(--usableWidth);
         padding: 1.0rem;
-        overflow-y: auto;
     }
 
     .pageTop {
@@ -107,7 +103,7 @@
     }
 
     .quicknote {
-        color: #6667ab;
+        color: #be349c;
     }
 
     .createcoll {

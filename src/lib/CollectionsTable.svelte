@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ToggleCollectionFavorite } from "$lib/scripts/db";
+    import { SetCollectionFavorite } from "$lib/scripts/db";
 
     export let collections: CollectionSelection[];
     export let updateCollections: () => Promise<void>;
@@ -7,7 +7,7 @@
     let currentSort: number = 4;
 
     function toggleCollectionFavorite(collectionId: number, isFavorite: boolean) {
-        ToggleCollectionFavorite(collectionId, !isFavorite)
+        SetCollectionFavorite(collectionId, !isFavorite)
             .then(() => updateCollections());
     }
 
@@ -76,7 +76,7 @@
         </div>
     </div>
     {#each collections as collection}
-        <a href="{collection.id + "/" + collection.name + "/0/0"}">
+        <a href="{collection.id + "/" + collection.name}">
         <div class="row itmR">
             <div class="co favIco" class:isFavorite={collection.favorite}><i class="bi bi-star-fill"
                 on:click={(event) => {

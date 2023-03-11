@@ -2,12 +2,11 @@ import { Store } from "tauri-plugin-store-api";
 
 const store = new Store(".settings.dat");
 
-export async function SetLastOpenCollection(collection: CollectionView) {
-    store.set("last-open-collection", collection);
-}
-
-export async function GetLastOpenCollection() {
-    return store.get("last-open-collection");
+export const enum SortType {
+    Date_Added_Asc,
+    Date_Added_Dsc,
+    Date_Modified_Asc,
+    Date_Modified_Dsc,
 }
 
 export async function SetDefaultCollection(collectionId: number) {
@@ -25,3 +24,64 @@ export async function SetColorModeIsDark(isDarkMode: boolean) {
 export async function GetColorModeIsDark() {
     return store.get("color-mode");
 }
+
+export async function SetCollectionView(collectionView: CollectionView) {
+    store.set("collection-views-" + collectionView.collectionId, collectionView);
+}
+
+export async function GetCollectionView(collectionId: number): Promise<CollectionView | null> {
+    return await store.get("collection-views-" + collectionId) as CollectionView | null;
+}
+
+export const EditModes = [
+    {id: 1, name: 'Append', class: 'append', ico: 'bi bi-plus'},
+    {id: 2, name: 'Free-Edit', class: 'editing', ico: 'bi bi-pen sIco'},
+    {id: 3, name: 'Read-Only', class: 'readOnly', ico: 'bi bi-lock sIco'}
+];
+
+export const DefaultViewModes: ViewModeCategory[] = [
+    {
+        id: 1,
+        name: "Date Added:",
+        ico: "bi bi-calendar3",
+        options: [
+            {
+                id: 1,
+                name: "Old to New",
+                ico: "bi bi-sort-numeric-down",
+                sort: SortType.Date_Added_Asc
+            },
+            {
+                id: 2,
+                name: "New to Old",
+                ico: "bi bi-sort-numeric-up-alt",
+                sort: SortType.Date_Added_Dsc
+            }
+        ]
+    },
+    {
+        id: 2,
+        name: "Date Modified:",
+        ico: "bi bi-calendar3",
+        options: [
+            {
+                id: 3,
+                name: "Old to New",
+                ico: "bi bi-sort-numeric-down",
+                sort: SortType.Date_Modified_Asc
+            },
+            {
+                id: 4,
+                name: "New to Old",
+                ico: "bi bi-sort-numeric-up-alt",
+                sort: SortType.Date_Modified_Dsc
+            }
+        ]
+    },
+    {
+        id: 3,
+        name: "Positional:",
+        ico: "bi bi-list-ol",
+        options: []
+    }
+];

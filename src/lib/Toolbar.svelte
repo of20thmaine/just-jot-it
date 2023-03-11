@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { EditModes } from "$lib/scripts/db";
+    import { EditModes } from "$lib/scripts/settings";
 
     export let editMode: any;
-    export let viewMode: any;
+    export let viewMode: Sortable | Positional;
+    export let viewModes: ViewModeCategory[];
     export let changeEditMode: (modeSelection: number) => void;
-    export let changeViewMode: (modeSelection: number) => void;
+    export let changeViewMode: (categoryId: number, optionId: number) => void;
 
     let showEditModeSelect = false;
     let showViewModeSelect = false;
@@ -16,161 +17,121 @@
     function toggleShowViewMode() {
         showViewModeSelect = !showViewModeSelect;
     }
+
+    function instanceOfSortable(obj: any): obj is Sortable {
+        return "sort" in obj;
+    }
 </script>
 
-<div class="toolBar">
-    <div class="selector {editMode.class}"
-        on:click={() => {toggleShowEditMode()}}
-        on:keypress={() => {toggleShowEditMode()}}>
-            <div class="ico"><i class="{editMode.icoClass}"></i></div>
-            <div class="name">{editMode.name}</div>
-            <div class="tIco"><i class="bi bi-chevron-down"></i></div></div>
-    {#if showEditModeSelect}
-        <div class="blinder"
-                on:click={() => {toggleShowEditMode()}}
-                on:keypress={() => {toggleShowEditMode()}}></div>
-        <div class="selectorMenu">
-            {#each EditModes as mode}
-                <div class="menuItm {mode.class}"
-                        on:click={() => {
-                            changeEditMode(mode.id);
-                            showEditModeSelect = false;
-                        }}
-                        on:keypress={() => {
-                            changeEditMode(mode.id);
-                            showEditModeSelect = false;
-                        }}>
-                    <div class="ico"><i class="{mode.icoClass}"></i></div>
-                    <div class="name">{mode.name}</div>
+<div class="outer">
+    <div class="toolBar">
+        <div class="selectHolder">
+            <div class="selector selTB {editMode.class}" class:selectorSelected={showEditModeSelect}
+                    on:click={() => {toggleShowEditMode()}}
+                    on:keypress={() => {toggleShowEditMode()}}>
+                <div class="ico {editMode.class}"><i class="{editMode.ico}"></i></div>
+                <div class="name {editMode.class}">{editMode.name}</div>
+                <div class="tIco"><i class="bi bi-chevron-down"></i></div>
+            </div>
+            {#if showEditModeSelect}
+                <div class="blinder"
+                        on:click={() => {toggleShowEditMode()}}
+                        on:keypress={() => {toggleShowEditMode()}}></div>
+                <div class="selectorMenu smTB">
+                    {#each EditModes as mode}
+                        <div class="opt"
+                                on:click={() => {
+                                    changeEditMode(mode.id);
+                                    showEditModeSelect = false;
+                                }}
+                                on:keypress={() => {
+                                    changeEditMode(mode.id);
+                                    showEditModeSelect = false;
+                                }}>
+                            <div class="ico"><i class="{mode.ico}"></i></div>
+                            <div class="name">{mode.name}</div>
+                        </div>
+                    {/each}
                 </div>
-            {/each}
+            {/if}
         </div>
-    {/if}
 
-    <div class="viewModeSelector"
-        on:click={() => {toggleShowViewMode()}}
-        on:keypress={() => {toggleShowViewMode()}}>
-            <div class="leftIco"><i class="{viewMode.leftIco}"></i></div>
-            <div class="viewModeName">{viewMode.name}</div>
-            <div class="rightIco"><i class="{viewMode.rightIco}"></i></div></div>
-    {#if showViewModeSelect}
-        <div class="blinder"
-            on:click={() => {toggleShowViewMode()}}
-            on:keypress={() => {toggleShowViewMode()}}></div>
-        <div class="viewModeSelectorMenu">
-            <div class="cat">
-                <i class="bi bi-arrow-down-up"></i>
-                <div class="catName">Date Added:</div>
+        <div class="selectHolder mL">
+            <div class="selector selTBVM" class:selectorSelected={showViewModeSelect}
+                    on:click={() => {toggleShowViewMode()}}
+                    on:keypress={() => {toggleShowViewMode()}}>
+                {#if instanceOfSortable(viewMode)}
+                    <div class="ico"><i class="{viewMode.ico}"></i></div>
+                {/if}
+                <div class="name">{viewMode.name}</div>
+                <div class="tIco"><i class="bi bi-chevron-down"></i></div>
             </div>
-                <div class="catItm"
-                        on:click={() => {
-                            changeViewMode(0);
-                            showViewModeSelect = false;
-                        }}
-                        on:keypress={() => {
-                            changeViewMode(0);
-                            showViewModeSelect = false;
-                        }}>
-                    <div class="catItmName">Old to New</div>
-                    <i class="bi bi-sort-numeric-down-alt"></i>
+            {#if showViewModeSelect}
+                <div class="blinder"
+                    on:click={() => {toggleShowViewMode()}}
+                    on:keypress={() => {toggleShowViewMode()}}></div>
+                <div class="selectorMenu selTBVMsm">
+                    {#each viewModes as viewModeCat}
+                        <div class="cat">
+                            <i class="{viewModeCat.ico}"></i>
+                            <div class="catName">{viewModeCat.name}</div>
+                        </div>
+                        {#each viewModeCat.options as option}
+                            <div class="opt"
+                                    on:click={() => {
+                                        changeViewMode(viewModeCat.id, option.id);
+                                        showViewModeSelect = false;
+                                    }}
+                                    on:keypress={() => {
+                                        changeViewMode(viewModeCat.id, option.id);
+                                        showViewModeSelect = false;
+                                    }}>
+                                <div class="name">{option.name}</div>
+                                {#if instanceOfSortable(option)}
+                                    <i class="{option.ico}"></i>
+                                {/if}
+                            </div>
+                        {/each}
+                    {/each}
+                    <div class="opt">
+                        <div class="name">Create New</div>
+                        <div class="ico"><i class="bi bi-plus-lg"></i></div>
+                    </div>
                 </div>
-                <div class="catItm"
-                        on:click={() => {
-                            changeViewMode(1);
-                            showViewModeSelect = false;
-                        }}
-                        on:keypress={() => {
-                            changeViewMode(1);
-                            showViewModeSelect = false;
-                        }}>
-                    <div class="catItmName">New to Old</div>
-                    <i class="bi bi-sort-numeric-down"></i>
-                </div>
-            <div class="cat">
-                <i class="bi bi-arrow-down-up"></i>
-                <div class="catName">Date Modified:</div>
-            </div>
-                <div class="catItm"
-                        on:click={() => {
-                            changeViewMode(2);
-                            showViewModeSelect = false;
-                        }}
-                        on:keypress={() => {
-                            changeViewMode(2);
-                            showViewModeSelect = false;
-                        }}>
-                    <div class="catItmName">Old to New</div>
-                    <i class="bi bi-sort-numeric-down-alt"></i>
-                </div>
-                <div class="catItm"
-                        on:click={() => {
-                            changeViewMode(3);
-                            showViewModeSelect = false;
-                        }}
-                        on:keypress={() => {
-                            changeViewMode(3);
-                            showViewModeSelect = false;
-                        }}>
-                    <div class="catItmName">New to Old</div>
-                    <i class="bi bi-sort-numeric-down"></i>
-                </div>
-            <div class="cat">
-                <i class="bi bi-list-ol"></i>
-                <div class="catName">Positional:</div>
-            </div>
-            <div class="catItm">
-                <div class="catItmName">Create New</div>
-                <i class="bi bi-plus-lg"></i>
-            </div>
+            {/if}
         </div>
-    {/if}
+    </div>
 </div>
 
 <style>
-     .toolBar {
-        padding: 0.3rem;
-        display: flex;
-        align-items: center;
+    .outer {
+        width: 100%;
         border-bottom: 1px solid var(--hoverBtnColor);
     }
 
-    .selector {
-        padding: 0 0.4rem;
-        border: 1px dashed;
+    .toolBar {
+        margin: 0 auto;
+        max-width: var(--usableWidth);
+        padding: 0.3rem;
         display: flex;
         align-items: center;
-        width: 130px;
-        height: 26px;
-        background-color: var(--textfieldColor);
-        cursor: pointer;
-        user-select: none;
     }
 
-    .selector:hover {
+    .selectHolder {
+        display: block;
+    }
+
+    .selTB {
+        padding: 0.25rem 0.4rem;
+        width: 130px;
+    }
+
+    .selTB:hover {
         border: 1px solid;
     }
 
-    .selectorMenu {
-        position: fixed;
-        z-index: 3;
-        top: 64px;
-        left: 0.3rem;
+    .smTB {
         width: 130px;
-        background-color: var(--backgroundColor);
-        border: 1px solid var(--borderColor);
-        cursor: pointer;
-    }
-
-    .menuItm {
-        display: flex;
-        align-items: center;
-        padding: 0.2rem 0.4rem;
-        border: 1px solid transparent;
-    }
-
-    .menuItm:hover {
-        border: 1px solid currentColor;
-        background-color: var(--textfieldColor);
     }
 
     .name {
@@ -183,75 +144,43 @@
     }
 
     .sIco {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     .tIco {
         font-size: 0.7rem;
     }
 
-    .viewModeSelector {
-        margin-left: 0.4rem;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        background-color: var(--textfieldColor);
-        color: #4fb8fe;
-        font-size: 0.8rem;
-        min-width: 142px;
-        height: 26px;
-        padding: 0 0.4rem;
-        border: 1px dashed #4fb8fe;
-        user-select: none;
+    .mL {
+        margin-left: 0.5rem;
     }
 
-    .viewModeSelector:hover {
-        border: 1px solid;
+    .selTBVM {
+        padding: 0.25rem 0.4rem;
+        width: 160px;
     }
 
-    .viewModeSelectorMenu {
-        position: fixed;
-        z-index: 3;
-        top: 64px;
-        left: 140px;
-        background-color: var(--backgroundColor);
-        border: 1px solid var(--borderColor);
-        color: var(--fontColor);
-        padding: 0.4rem;
-        font-size: 0.8rem;
-        min-width: 142px;
-    }
-
-    .viewModeName {
-        margin: 0 auto;
+    .selTBVMsm {
+        width: 160px;
     }
 
     .cat {
         display: flex;
         align-items: center;
-        padding: 0.4rem;
-        user-select: none;
+        padding: 0.5rem;
+        margin: 1px;
+        border-bottom: 1px solid var(--titlebarColor);
+        cursor: auto;
     }
 
     .catName {
-        margin-left: 0.4rem;
+        margin-left: 0.7rem;
         font-weight: 600;
+        font-size: 0.8rem;
     }
     
     .itm {
         padding: 0.4rem;
-    }
-
-    .catItm {
-        display: flex;
-        align-items: center;
-        justify-content: right;
-        padding: 0.4rem;
-        cursor: pointer;
-    }
-
-    .catItm:hover {
-        background-color: var(--highlightColor);
     }
 
     .catItmName {
@@ -263,14 +192,17 @@
     }
 
     .append {
-        color: #3cb452;
+        /* color: #3cb452; */
+        color: #34be7b;
     }
 
     .editing {
-        color: #F5DF4D;
+        /* color: #F5DF4D; */
+        color: #f5e28e;
     }
 
     .readOnly {
-        color: #BE3455;
+        /* color: #BE3455; */
+        color: #df7e79;
     }
 </style>

@@ -1,4 +1,5 @@
 import Database, { type QueryResult } from "tauri-plugin-sql-api";
+import { SortType } from "$lib/scripts/settings";
 
 const db = await Database.load("sqlite:notes.db");
 
@@ -17,95 +18,100 @@ export async function CreateCollection(name: string): Promise<QueryResult> {
 }
 
 export async function UpdateNote(id: number, content: string): Promise<QueryResult> {
-    return await db.execute("UPDATE notes SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", [content, id]);
+    return await db.execute(
+        "UPDATE notes SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        [content, id]
+    );
 }
 
 export async function DeleteNote(id: number): Promise<QueryResult> {
-    return await db.execute("DELETE FROM notes WHERE id = $1", [id]);
+    return await db.execute(
+        "DELETE FROM notes WHERE id = $1",
+        [id]
+    );
 }
 
-export async function GetAllNotes(): Promise<Note[]> {
-    return await db.select("SELECT * FROM notes");
-}
-
-export async function GetCollection(collection_id: number, sort: SortTypes): Promise<Note[]> {
-    return await db.select("SELECT * FROM notes WHERE collection_id = $1 ORDER BY $2",
-        [collection_id, getOrderByStr(sort)]);
+export async function GetCollection(collection_id: number, sort: SortType): Promise<Note[]> {
+    return await db.select(
+        "SELECT * FROM notes WHERE collection_id = $1 ORDER BY $2",
+        [collection_id, getOrderByStr(sort)]
+    );
 }
 
 export async function GetCollectionList(): Promise<Collection[]> {
-    return await db.select("SELECT * FROM collections");
+    return await db.select(
+        "SELECT * FROM collections"
+    );
 }
 
 export async function GetCollections(): Promise<CollectionSelection[]> {
-    return await db.select("SELECT id, name, " + 
-                            "(SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, " +
-	                        "last_open, favorite FROM collections ORDER BY last_open DESC");
+    return await db.select(
+        "SELECT id, name, (SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) " +
+        "note_count, last_open, favorite FROM collections ORDER BY last_open DESC"
+    );
+}
+
+export async function GetLastOpenCollection(): Promise<Collection> {
+    return await db.select("SELECT id, name, MAX(last_open) FROM collections");
 }
 
 export async function GetFavorites(): Promise<CollectionSelection[]> {
-    return await db.select("SELECT id, name, " + 
-                            "(SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) note_count, " +
-	                        "last_open, favorite FROM collections WHERE favorite = 1 ORDER BY last_open DESC");
+    return await db.select(
+        "SELECT id, name, (SELECT COUNT(*) FROM notes WHERE notes.collection_id = collections.id) " +
+        "note_count, last_open, favorite FROM collections WHERE favorite = 1 ORDER BY last_open DESC"
+    );
 }
 
-export async function ToggleCollectionFavorite(collection_id: number, isFavorite: boolean): Promise<QueryResult> {
+export async function SetCollectionFavorite(collection_id: number, isFavorite: boolean): Promise<QueryResult> {
     let value = isFavorite ? 1 : 0;
-    return await db.execute("UPDATE collections SET favorite = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", [value, collection_id]);
+    return await db.execute(
+        "UPDATE collections SET favorite = $1 WHERE id = $2",
+        [value, collection_id]
+    );
 }
 
 export async function UpdateCollectionLastOpen(collection_id: number): Promise<QueryResult> {
-    return await db.execute("UPDATE collections SET last_open = CURRENT_TIMESTAMP WHERE id = $1", [collection_id]);
+    return await db.execute(
+        "UPDATE collections SET last_open = CURRENT_TIMESTAMP WHERE id = $1",
+        [collection_id]
+    );
 }
 
-// export async function GetCollectionName(id: number): Promise<string> {
-//     return await db.select("SELECT name FROM collections WHERE id = $1", [id]);
-// }
+export async function CreatePositional(name: string, collection_id: number): Promise<QueryResult> {
+    return await db.execute(
+        "INSERT INTO positionals (name, collection_id) VALUES ($1, $2)",
+        [name, collection_id]
+    );
+}
 
-// export async function GetCollectionTwo(collection_id: number, sort: SortTypes): Promise<Collection> {
+export async function GetCollectionsPositionals(collection_id: number): Promise<Positional[]> {
+    return await db.select(
+        "SELECT (id, name, created_at, last_open) FROM positionals WHERE collection_id = $1",
+        [collection_id]
+    );
+}
 
-// }
+export async function GetPositional(positional_id: number): Promise<PositionedNote[]> {
+    return await db.select(
+        "SELECT * FROM notes INNER JOIN positioned_notes ON notes.id = positioned_notes.note_id WHERE positioned_notes.positional_id = 1",
+        [positional_id]
+    );
+}
 
-// export async function addSomeData() {
-//     await db.execute("INSERT INTO collections (name) VALUES ('*')");
-//     await db.execute("INSERT INTO notes (content, collection_id) VALUES ('Example Note One.', 1)");
-//     await db.execute("INSERT INTO notes (content, collection_id) VALUES ('Example Note Two.', 1)");
-//     await db.execute("INSERT INTO notes (content, collection_id) VALUES ('Example Note Three.', 1)");
-// }
-
-function getOrderByStr(sortType: SortTypes): string {
+/**
+ * Returns query substring for note sorting.
+ * @param sortType 
+ * @returns String which goes in "ORDER BY" part of query
+ */
+function getOrderByStr(sortType: SortType): string {
     switch (sortType) {
-        case SortTypes.Date_Added_Asc:
+        case SortType.Date_Added_Asc:
             return "created_at ASC";
-        case SortTypes.Date_Added_Dsc:
+        case SortType.Date_Added_Dsc:
             return "created_at DSC";
-        case SortTypes.Date_Modified_Asc:
+        case SortType.Date_Modified_Asc:
             return "updated_at ASC";
-        case SortTypes.Date_Modified_Dsc:
+        case SortType.Date_Modified_Dsc:
             return "updated_at DSC";
     }
 }
-
-export enum SortTypes {
-    Date_Added_Asc,
-    Date_Added_Dsc,
-    Date_Modified_Asc,
-    Date_Modified_Dsc
-}
-
-export const EditModes = [
-    {id: 0, name: 'Append', class: 'append', icoClass: 'bi bi-plus'},
-    {id: 1, name: 'Free-Edit', class: 'editing', icoClass: 'bi bi-pen tIco'},
-    {id: 2, name: 'Read-Only', class: 'readOnly', icoClass: 'bi bi-lock sIco'}
-];
-
-export const ViewModes = [
-    {id: 0, type: SortTypes.Date_Added_Asc, name: "Date Added", leftIco: "bi bi-arrow-down-up",
-        rightIco: "bi bi-sort-numeric-down-alt"},
-    {id: 1, type: SortTypes.Date_Added_Dsc, name: "Date Added", leftIco: "bi bi-arrow-down-up",
-        rightIco: "bi bi-sort-numeric-down"},
-    {id: 2, type: SortTypes.Date_Modified_Asc, name: "Date Modified", leftIco: "bi bi-arrow-down-up",
-        rightIco: "bi bi-sort-numeric-down-alt"},
-    {id: 3, type: SortTypes.Date_Modified_Dsc, name: "Date Modified", leftIco: "bi bi-arrow-down-up",
-        rightIco: "bi bi-sort-numeric-down"},
-];

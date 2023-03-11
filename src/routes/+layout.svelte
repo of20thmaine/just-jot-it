@@ -27,7 +27,6 @@
             });
         });
     });
-
     // Single place in app to change color mode css, other places only change ColorModeIsDark
     ColorModeIsDark.subscribe((value) => {
         if (value) {
