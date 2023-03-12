@@ -5,13 +5,17 @@
 
     WindowTitle.set("Home");
 
-    let lastOpen: Collection | null;
+    let lastOpen: Collection;
     let collections: CollectionSelection[];
     let favorites: CollectionSelection[];
 
-    GetLastOpenCollection().then((value) => lastOpen = value);
+    GetLastOpenCollection().then((value) => {
+        if (value && value[0]) { lastOpen = value[0] }
+    });
 
     updateCollections();
+
+    $: console.log(lastOpen);
 
     async function updateCollections(): Promise<void> {
         return Promise.all([GetFavorites(), GetCollections()])

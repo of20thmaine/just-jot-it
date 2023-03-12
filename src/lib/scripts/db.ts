@@ -51,7 +51,7 @@ export async function GetCollections(): Promise<CollectionSelection[]> {
     );
 }
 
-export async function GetLastOpenCollection(): Promise<Collection> {
+export async function GetLastOpenCollection(): Promise<Collection[]> {
     return await db.select("SELECT id, name, MAX(last_open) FROM collections");
 }
 

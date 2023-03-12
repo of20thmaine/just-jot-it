@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { CreateNote, GetCollection, DeleteNote, UpdateCollectionLastOpen } from "$lib/scripts/db";
     import { DefaultViewModes, EditModes, SetCollectionView, GetCollectionView } from "$lib/scripts/settings";
     import { WindowTitle } from "$lib/scripts/stores";
@@ -7,53 +6,74 @@
     import Toolbar from "$lib/Toolbar.svelte";
 
     export let data: Collection;
-    let view: CollectionView;
-
-
-    let collectionId: number = data.collectionId;
-    let editMode = EditModes[data.editModeId];
-    let viewCategoryId: number = data.viewCategoryId;
-    let viewOptionId: number = data.viewOptionId;
-
-
 
     let notes: Note[];
+    let collectionView: CollectionView;
     let collectionElement: HTMLElement;
     let noteInput: HTMLElement;
     let forceFocusId: number | null = null;
-    let viewModes: ViewModeCategory[] = DefaultViewModes; // Add code to append positionals on load.
-    let viewMode: Sortable | Positional = viewModes[viewCategoryId].options[viewOptionId];
-
-
-
+    let editMode: EditMode;
+    let viewModes: ViewModeCategory[] = DefaultViewModes; // Append positionals later
+    let viewMode: ViewMode;
 
     WindowTitle.set(data.name);
 
-    if (instanceOfSortable(viewMode)) {
-        GetCollection(data.id, viewMode.sort).then((value) => {notes = value });
-    } // else positional
-    UpdateCollectionLastOpen(data.id);
-
     $: if (noteInput) noteInput.focus();
-    
-    onMount(() => {
-        jumpToPageEnd();
-    });
+    $: if (collectionView) SetCollectionView(collectionView);
+    $: if (collectionElement) collectionElement.scrollTop = collectionElement.scrollHeight;
 
     async function initialDataLoad() {
-        
+        return await GetCollectionView(data.id).then((value) => {
+            if (value) {
+                collectionView = value;
+            } else {
+                collectionView = {
+                    id: data.id,
+                    name: data.name,
+                    editModeId: 1,
+                    viewCategoryId: 1,
+                    viewModeId: 1
+                }
+            }
+            editMode = getEditModeFromId(collectionView.editModeId);
+            viewMode = getViewModeFromId(collectionView.viewCategoryId, collectionView.viewModeId);
+
+            if (viewMode.isSortable) {
+                return GetCollection(data.id, viewMode.sort)
+                    .then((value) => {notes = value })
+                    .finally(() => UpdateCollectionLastOpen(data.id));
+            }
+        });
     }
 
-    function instanceOfSortable(obj: any): obj is Sortable {
-        return "sort" in obj;
+    function getEditModeFromId(id: number): EditMode {
+        for (let editMode of EditModes) {
+            if (editMode.id === id) {
+                return editMode;
+            }
+        }
+        return EditModes[0];
+    }
+
+    function getViewModeFromId(catId: number, optId: number): ViewMode {
+        for (let cat of viewModes) {
+            if (cat.id === catId) {
+                for (let opt of cat.options) {
+                    if (opt.id === optId) {
+                        return opt;
+                    }
+                }
+            }
+        }
+        return viewModes[0].options[0]; // Consider better error handling next.
     }
 
     function jumpToPageEnd() {
         collectionElement.scrollTop = collectionElement.scrollHeight;
     }
 
-    function changeEditMode(modeSelection: number) {
-        editMode = EditModes[modeSelection];
+    function changeEditMode(id: number) {
+        editMode = getEditModeFromId(id);
         if (editMode.id === 1) {
             setTimeout(() => {noteInput.focus()}, 0);
         }
@@ -83,12 +103,14 @@
             }
         } // else positional
         notes = notes;
-        viewMode = viewModes[categoryId].options[optionId];
+        viewMode = getViewModeFromId(categoryId, optionId);
+        collectionView.viewCategoryId = categoryId;
+        collectionView.viewModeId = optionId;
     }
 
     async function updateCollection() {
-        if (instanceOfSortable(viewMode)) {
-            notes = await GetCollection(data.collectionId, viewMode.sort);
+        if (viewMode.isSortable) {
+            notes = await GetCollection(data.id, viewMode.sort);
         }
     }
 
@@ -141,7 +163,7 @@
             case "Enter":
                 event.preventDefault();
                 if (target.innerHTML.length > 0) {
-                    CreateNote(target.innerHTML, collectionId);
+                    CreateNote(target.innerHTML, data.id);
                     updateCollection().then(() => {jumpToPageEnd();});
                     target.innerHTML = "";
                 }
@@ -150,17 +172,17 @@
     }
 </script>
 
-<div class="page">
-    <Toolbar
-        editMode={editMode}
-        viewMode={viewMode}
-        viewModes={viewModes}
-        changeEditMode={changeEditMode}
-        changeViewMode={changeViewMode}
-    />
-    <div class="outerCollection" bind:this={collectionElement}>
-        <div class="noteCollection">
-            {#if notes}
+{#await initialDataLoad() then x}
+    <div class="page">
+        <Toolbar
+            editMode={editMode}
+            viewMode={viewMode}
+            viewModes={viewModes}
+            changeEditMode={changeEditMode}
+            changeViewMode={changeViewMode}
+        />
+        <div class="outerCollection" bind:this={collectionElement}>
+            <div class="noteCollection">
                 {#each notes as note, i}
                     <NoteView 
                         bind:note={note} 
@@ -170,26 +192,24 @@
                         forceFocusChange={forceFocusChange}
                         deleteNoteHandler={deleteNoteHandler} />
                 {/each}
-            {:else}
-                <p>Loading Collection...</p>
-            {/if}
+            </div>
         </div>
-    </div>
-    {#if editMode.id === 1}
-        <div class="outerEntry">
-            <div class="noteEntry">
-                <div class="inputArea">
-                    <div class="noteInput"
-                        contenteditable="true"
-                        on:keydown={editingKeyHandler}
-                        bind:this={noteInput}
-                        placeholder="Append new note">
+        {#if editMode.id === 1}
+            <div class="outerEntry">
+                <div class="noteEntry">
+                    <div class="inputArea">
+                        <div class="noteInput"
+                            contenteditable="true"
+                            on:keydown={editingKeyHandler}
+                            bind:this={noteInput}
+                            placeholder="Append new note">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    {/if}
-</div>
+        {/if}
+    </div>
+{/await}
 
 <style>
     .page {

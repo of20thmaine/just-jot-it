@@ -1,8 +1,8 @@
 <script lang="ts">
     import { EditModes } from "$lib/scripts/settings";
 
-    export let editMode: any;
-    export let viewMode: Sortable | Positional;
+    export let editMode: EditMode;
+    export let viewMode: ViewMode;
     export let viewModes: ViewModeCategory[];
     export let changeEditMode: (modeSelection: number) => void;
     export let changeViewMode: (categoryId: number, optionId: number) => void;
@@ -16,10 +16,6 @@
 
     function toggleShowViewMode() {
         showViewModeSelect = !showViewModeSelect;
-    }
-
-    function instanceOfSortable(obj: any): obj is Sortable {
-        return "sort" in obj;
     }
 </script>
 
@@ -60,7 +56,7 @@
             <div class="selector selTBVM" class:selectorSelected={showViewModeSelect}
                     on:click={() => {toggleShowViewMode()}}
                     on:keypress={() => {toggleShowViewMode()}}>
-                {#if instanceOfSortable(viewMode)}
+                {#if viewMode.isSortable}
                     <div class="ico"><i class="{viewMode.ico}"></i></div>
                 {/if}
                 <div class="name">{viewMode.name}</div>
@@ -87,7 +83,7 @@
                                         showViewModeSelect = false;
                                     }}>
                                 <div class="name">{option.name}</div>
-                                {#if instanceOfSortable(option)}
+                                {#if option.isSortable}
                                     <i class="{option.ico}"></i>
                                 {/if}
                             </div>
