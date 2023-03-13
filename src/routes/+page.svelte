@@ -10,12 +10,10 @@
     let favorites: CollectionSelection[];
 
     GetLastOpenCollection().then((value) => {
-        if (value && value[0]) { lastOpen = value[0] }
+        if (value[0].id !== null) { lastOpen = value[0] }
     });
 
     updateCollections();
-
-    $: console.log(lastOpen);
 
     async function updateCollections(): Promise<void> {
         return Promise.all([GetFavorites(), GetCollections()])

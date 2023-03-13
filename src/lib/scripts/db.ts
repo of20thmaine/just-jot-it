@@ -19,7 +19,7 @@ export async function CreateCollection(name: string): Promise<QueryResult> {
 
 export async function UpdateNote(id: number, content: string): Promise<QueryResult> {
     return await db.execute(
-        "UPDATE notes SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        "UPDATE notes SET content = $1, updated_at = (datetime(CURRENT_TIMESTAMP, 'localtime')) WHERE id = $2",
         [content, id]
     );
 }
@@ -72,7 +72,7 @@ export async function SetCollectionFavorite(collection_id: number, isFavorite: b
 
 export async function UpdateCollectionLastOpen(collection_id: number): Promise<QueryResult> {
     return await db.execute(
-        "UPDATE collections SET last_open = CURRENT_TIMESTAMP WHERE id = $1",
+        "UPDATE collections SET last_open = (datetime(CURRENT_TIMESTAMP, 'localtime')) WHERE id = $1",
         [collection_id]
     );
 }

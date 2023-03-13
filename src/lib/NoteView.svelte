@@ -73,7 +73,7 @@
     }
 </script>
 
-{#if editMode === 1}
+{#if editMode === 2}
     <div class="noteContent"
         contenteditable="true"
         bind:this={node}

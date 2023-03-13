@@ -4,8 +4,8 @@
 CREATE TABLE "notes" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "content" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
     "collection_id" INTEGER NOT NULL,
     CONSTRAINT "notes_collections_fkey"
         FOREIGN KEY ("collection_id")
@@ -17,8 +17,8 @@ CREATE TABLE "notes" (
 CREATE TABLE "collections" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT UNIQUE, --Unique neccesary?
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "last_open" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
+    "last_open" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
     "favorite" BOOLEAN NOT NULL DEFAULT 0
 );
 
@@ -26,8 +26,8 @@ CREATE TABLE "collections" (
 CREATE TABLE "positionals" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "last_open" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
+    "last_open" DATETIME NOT NULL DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')),
     "collection_id" INTEGER NOT NULL,
     CONSTRAINT "positionals_collections_fkey"
         FOREIGN KEY ("collection_id")
